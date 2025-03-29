@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes
 async def start(update: Update, context):
     await update.message.reply_text(
         "🧠 Welcome to the Official Kendu Bot — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
-        "We don’t gamble, we work. 💪\n"
+        "We don’t gamble, we work. 💪\n\n"
         "Explore the projects, get involved, and join the movement.\n\n"
         "📡 Available on Ethereum, Solana, and Base blockchains  \n"
         "✅ CertiK audit completed — verified & secured\n\n"
