@@ -1,8 +1,27 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🤖 Hello! Welcome to the bot. Use /menu to get started.")
+async def start(update: Update, context):
+    await update.message.reply_text(
+        "🧠 Welcome to the Official Kendu Bot — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
+        "We don’t gamble, we work. 💪\n"
+        "Explore the projects, get involved, and join the movement.\n\n"
+        "📡 Available on Ethereum, Solana, and Base blockchains  \n"
+        "✅ CertiK audit completed — verified & secured\n\n"
+        "﹎﹎﹎﹎﹎﹎﹎\n"
+        "🧭 Tap /menu to get started or explore:\n\n"
+        "/about        → What is Kendu?  \n"
+        "/eco          → Our Ecosystem  \n"
+        "/buykendu     → How to Buy  \n"
+        "/faq          → Questions & Answers  \n"
+        "/contracts    → Contract Addresses  \n"
+        "/follow       → Links & Socials  \n"
+        "﹎﹎﹎﹎﹎﹎﹎\n\n"
+        "📢 Official Website: https://kendu.io  \n"
+        "🧵 Twitter/X: https://x.com/KenduInu  \n"
+        "📰 Reddit: https://www.reddit.com/r/KenduInu_Ecosystem  \n\n"
+        "Made with ❤️ by the Kendu Community."
+    )
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
