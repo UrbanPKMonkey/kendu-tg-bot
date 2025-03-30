@@ -59,7 +59,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "🧠 <b>About Kendu</b>\n\n"
             "Kendu is a movement that empowers you to turn your life goals into reality.\n"
             "Take initiative, and the community will fuel your journey.\n"
-            "<b>What is your dream? 💭</b>\n"
+            "<b>What is your dream? 💭</b>\n\n"
 
             "🔗 <b>Power to the Holders</b>\n"
             "Kendu gives its holders the power to shape their future.\n"
