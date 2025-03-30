@@ -13,6 +13,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
+    
+    # ✅ Show banner image only here
+    await update.message.reply_photo(
+        photo="https://raw.githubusercontent.com/UrbanPKMonkey/kendu-tg-bot/main/assets/bot_start_banner.png"
+    )
+
+
+    # ✅ Follow up with intro message
     await update.message.reply_text(
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
         "<b>We don’t gamble, we work.</b> 💪\n\n"
@@ -30,8 +38,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<b>💬 Telegram:</b> <a href='https://t.me/Kendu'>https://t.me/Kendu</a>\n"
         "<b>📣 Twitter/X:</b> <a href='https://x.com/KenduInu'>https://x.com/KenduInu</a>\n"
         "<b>📰 Reddit:</b> <a href='https://www.reddit.com/r/KenduInu_Ecosystem'>r/KenduInu_Ecosystem</a>\n\n"
-        "⛓️ Available on Ethereum (ETH), Solana (SOL), and Base (BASE) blockchains\n"
-        "<b>Contract Addresses:</b>\n"
+        "⛓️ Available on Ethereum (ETH), Solana (SOL), and Base (BASE)\n"
         "<b>ETH:</b> 0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18\n"
         "<b>SOL:</b> 2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45\n"
         "<b>BASE:</b> 0xef73611F98DA6E57e0776317957af61B59E09Ed7\n\n"
