@@ -103,8 +103,11 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if msg_id:
             await edit_menu_response(context, chat_id, msg_id, text, back_button)
 
+
+
     elif data == "ecosystem":
-        text = (
+        photo_url = "https://www.kendu.io/assets/images/kendu-eco-bg.webp"  # Use a clean ecosystem image
+        caption = (
             "🌐 <b>Kendu Ecosystem</b>\n\n"
             "Kendu is more than a token —\n"
             "It’s a <b>permissionless, decentralized brand</b> with no limits on what can be built.\n\n"
@@ -114,7 +117,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Viral content\n\n"
             "<b>Kendu is your launchpad</b> for whatever comes next.\n"
             "If you can dream it, you can build it. 💥\n\n"
-            "Explore our Ecosystem"
+            "Explore our Ecosystem 👇"
         )
 
         reply_markup = InlineKeyboardMarkup([
@@ -126,9 +129,10 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 Back", callback_data="menu")]
         ])
 
-        msg_id = context.user_data.get("menu_msg_id")
-        if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+        await query.message.edit_media(
+            media=InputMediaPhoto(media=photo_url, caption=caption, parse_mode="HTML"),
+            reply_markup=reply_markup
+        )
 
 
     elif data == "kendu_energy":
