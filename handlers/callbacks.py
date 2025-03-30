@@ -92,6 +92,8 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             "🪖 <b>We don’t gamble. We work!</b>"
         )
 
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="menu")]])
+
         await smart_send_or_edit(
             query=query,
             context=context,
