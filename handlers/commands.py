@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-async def start(update: Update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🧠 About", callback_data="about")],
         [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
