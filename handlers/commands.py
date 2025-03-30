@@ -29,7 +29,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🧵 Twitter/X: https://x.com/KenduInu  \n"
         "📰 Reddit: https://www.reddit.com/r/KenduInu_Ecosystem  \n\n"
         "Made with ❤️ by the Kendu Community.",
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        disable_web_page_preview=True
     )
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
