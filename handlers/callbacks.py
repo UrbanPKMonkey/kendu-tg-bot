@@ -23,11 +23,14 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        await query.message.edit_text(
-            "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-            parse_mode="HTML",
-            reply_markup=reply_markup
-        )
+        try:
+            await query.message.edit_text(
+                "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
+                parse_mode="HTML",
+                reply_markup=reply_markup
+            )
+        except Exception as e:
+            await query.message.reply_text(f"⚠️ Error: {e}")
 
     elif data == "about":
         await query.message.edit_text(
