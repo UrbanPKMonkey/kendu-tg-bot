@@ -1,21 +1,49 @@
-from telegram import InlineKeyboardMarkup, Update, InputMediaPhoto, InlineKeyboardButton
+from telegram import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    Update,
+    InputMediaPhoto,
+    Message,
+)
 from telegram.ext import ContextTypes
+from io import BytesIO
+import requests
+from PIL import Image
+
 
 async def smart_send_or_edit(
-    query,
-    context: ContextTypes.DEFAULT_TYPE,
-    new_text: str,
+    query=None,
+    context: ContextTypes.DEFAULT_TYPE = None,
+    new_text: str = "",
     reply_markup: InlineKeyboardMarkup = None,
-    parse_mode: str = "HTML"
+    parse_mode: str = "HTML",
+    message_override: Message = None
 ):
-    """Edits the existing menu message or deletes & sends a new one if not editable."""
-    chat_id = query.message.chat_id
+    """
+    Edits or sends a new message depending on interaction context.
+    Automatically deletes old message if necessary.
+
+    Parameters:
+        query (CallbackQuery): When triggered by a button.
+        context: Telegram context object.
+        new_text (str): Message content.
+        reply_markup (InlineKeyboardMarkup): Optional buttons.
+        parse_mode (str): HTML/Markdown.
+        message_override (Message): Used for slash commands.
+    """
+    if query:
+        chat_id = query.message.chat_id
+        message = query.message
+    elif message_override:
+        chat_id = message_override.chat_id
+        message = message_override
+    else:
+        raise ValueError("No valid message or query provided to smart_send_or_edit.")
+
     old_msg_id = context.user_data.get("menu_msg_id")
 
-    # If we already have a stored message ID
     if old_msg_id:
         try:
-            # Try to edit the existing message
             await context.bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=old_msg_id,
@@ -23,37 +51,37 @@ async def smart_send_or_edit(
                 reply_markup=reply_markup,
                 parse_mode=parse_mode
             )
-            return  # Success ✅
-        except Exception as e:
-            # If it fails (e.g. message was a photo), delete it and send new
+            return
+        except Exception:
+            # Editing failed (e.g. media vs. text), try delete
             try:
                 await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
             except Exception:
-                pass  # Ignore if already deleted
+                pass  # Message already deleted or expired
 
-    # Send a new text message (used if there’s no msg_id or edit failed)
-    sent = await query.message.reply_text(
+    sent = await message.reply_text(
         text=new_text,
         reply_markup=reply_markup,
         parse_mode=parse_mode
     )
     context.user_data["menu_msg_id"] = sent.message_id
 
-from PIL import Image
-import requests
-from io import BytesIO
 
 async def add_black_background_to_image(image_url: str) -> BytesIO:
     """
-    Loads an image from URL, adds a black background if it has transparency,
-    and returns a BytesIO object ready for Telegram upload.
+    Adds a black background behind transparent PNGs for Telegram compatibility.
+
+    Parameters:
+        image_url (str): URL to the image.
+
+    Returns:
+        BytesIO: Image file ready to send.
     """
     response = requests.get(image_url)
     original = Image.open(BytesIO(response.content)).convert("RGBA")
 
-    # Create black background the same size as original
     background = Image.new("RGB", original.size, (0, 0, 0))
-    background.paste(original, mask=original.split()[3])  # Use alpha channel as mask
+    background.paste(original, mask=original.split()[3])  # Apply alpha channel
 
     output = BytesIO()
     output.name = "with_black_bg.png"
@@ -63,6 +91,12 @@ async def add_black_background_to_image(image_url: str) -> BytesIO:
 
 
 def get_contracts_text_and_markup():
+    """
+    Returns contract text + back button markup.
+
+    Returns:
+        Tuple[str, InlineKeyboardMarkup]
+    """
     text = (
         "🧾 <b>Contract Addresses</b>\n\n"
         "⚫ <b>Ethereum (ETH):</b>\n"

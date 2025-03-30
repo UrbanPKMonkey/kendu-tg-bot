@@ -2,12 +2,21 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from handlers.callbacks import handle_button
 
+# ✅ Simulates a button tap from a slash command
+async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
+    await handle_button(
+        update=None,
+        context=context,
+        data_override=data,
+        message_override=update.message
+    )
 
 # ✅ /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[
-        {"text": "🤖 Menu", "callback_data": "menu"}
-    ]]
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
+    ])
     await update.message.reply_photo(
         photo="https://i.imgur.com/r0i7fuG.png",
         caption=(
@@ -38,21 +47,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Made with ❤️ by the Kendu Community."
         ),
         parse_mode="HTML",
-        reply_markup={"inline_keyboard": keyboard}
+        reply_markup=keyboard
     )
 
-
-# ✅ Helper for all slash commands
-async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
-    await handle_button(
-        update=None,
-        context=context,
-        data_override=data,
-        message_override=update.message
-    )
-
-
-# ✅ Slash Command to Callback Handlers
+# ✅ Each slash command reuses callback logic
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await simulate_button(update, context, "menu")
 

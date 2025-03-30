@@ -18,17 +18,13 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
         reply_markup=reply_markup
     )
 
-async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, data_override: str = None, message_override=None):
-    query = update.callback_query if update and update.callback_query else None
-    data = data_override or (query.data if query else None)
-    message = message_override or (query.message if query else None)
-    chat_id = message.chat_id if message else None
+async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, data_override=None, message_override=None):
+    query = update.callback_query if update else None
+    data = query.data if query else data_override
+    chat_id = (query.message.chat_id if query else message_override.chat_id)
 
     if query:
         await query.answer()
-
-    if not data or not message or not chat_id:
-        return
 
     if data == "menu":
         keyboard = [
@@ -55,8 +51,9 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             await smart_send_or_edit(
                 query=query,
                 context=context,
-                new_text="🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-                reply_markup=reply_markup
+                new_text=text,
+                reply_markup=reply_markup,
+                message_override=message_override
             )
 
     elif data == "about":
@@ -103,7 +100,8 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             query=query,
             context=context,
             new_text=text,
-            reply_markup=back_button
+            reply_markup=reply_markup,
+            message_override=message_override
         )
 
 
@@ -134,7 +132,8 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             query=query,
             context=context,
             new_text=text,
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
+            message_override=message_override
         )
 
 
@@ -506,9 +505,13 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
 
     elif data == "contract_addresses":
         text, reply_markup = get_contracts_text_and_markup()
-        msg_id = context.user_data.get("menu_msg_id")
-        if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+        await smart_send_or_edit(
+            query=query,
+            context=context,
+            new_text=text,
+            reply_markup=reply_markup,
+            message_override=message_override
+        )
 
     elif data == "follow_links":
         text = "🔗 <b>Follow Kendu</b>\n\nExplore our ecosystem and stay connected 👇"
@@ -528,7 +531,10 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             [InlineKeyboardButton("💰 CoinMarketCap", url="https://coinmarketcap.com/currencies/kendu-inu/")],
             [InlineKeyboardButton("🔙 Back", callback_data="menu")]
         ])
-
-        msg_id = context.user_data.get("menu_msg_id")
-        if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+        await smart_send_or_edit(
+            query=query,
+            context=context,
+            new_text=text,
+            reply_markup=reply_markup,
+            message_override=message_override
+        )
