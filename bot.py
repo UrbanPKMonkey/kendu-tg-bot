@@ -11,6 +11,12 @@ def main():
     # Command Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", menu))
+    app.add_handler(CommandHandler("about", about))
+    app.add_handler(CommandHandler("eco", eco))
+    app.add_handler(CommandHandler("buykendu", buykendu))
+    app.add_handler(CommandHandler("contracts", contracts))
+    app.add_handler(CommandHandler("faq", faq))
+    app.add_handler(CommandHandler("follow", follow))
 
     # Callback Handlers
     app.add_handler(CallbackQueryHandler(handle_button))
