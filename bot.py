@@ -1,5 +1,5 @@
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
-from handlers.commands import start, menu
+from handlers.commands import start, menu, about, eco, buykendu, contracts, faq, follow
 from handlers.callbacks import handle_button
 import os
 
