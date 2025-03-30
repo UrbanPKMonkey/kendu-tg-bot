@@ -11,7 +11,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ✅ start message
     await update.message.reply_text(
-        "https://imgur.com/r0i7fuG"
+        "https://i.imgur.com/r0i7fuG.png"
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
         "<b>We don’t gamble, we work.</b> 💪\n\n"
         "Explore the projects, get involved, and join the movement.\n\n"
