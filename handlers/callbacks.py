@@ -100,9 +100,8 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=back_button
         )
 
-    elif data == "ecosystem":
-        await query.answer()
 
+    elif data == "ecosystem":
         text = (
             "🌐 <b>Kendu Ecosystem</b>\n\n"
             "Kendu is more than a token —\n"
@@ -125,11 +124,15 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 Back", callback_data="menu")]
         ])
 
-        await query.message.edit_text(
-            text=text,
-            parse_mode="HTML",
+        await smart_send_or_edit(
+            query=query,
+            context=context,
+            new_text=text,
             reply_markup=reply_markup
         )
+
+
+
 
     elif data == "kendu_energy":
         photo_url = "https://www.kendu.io/assets/images/kendu-energy-drink.webp"
@@ -143,10 +146,20 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
         ])
 
-        await query.message.edit_media(
-            media=InputMediaPhoto(media=photo_url, caption=caption, parse_mode="HTML"),
+        # Delete previous message and send image
+        await query.message.delete()
+        new_msg = await query.message.chat.send_photo(
+            photo=photo_url,
+            caption=caption,
+            parse_mode="HTML",
             reply_markup=reply_markup
         )
+
+        # Track the new message ID so back works!
+        context.user_data["menu_msg_id"] = new_msg.message_id
+
+
+
 
     elif data == "buy_kendu":
         text = "💰 <b>How to Buy Kendu</b>\n\nKendu is available on Ethereum, Solana, and Base.\n\nVisit /buykendu to learn more."
