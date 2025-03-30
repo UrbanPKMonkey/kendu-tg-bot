@@ -44,20 +44,23 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
         ])
 
-        # 🧼 Always delete the previous message if it's a photo (like from /start)
+        # ✅ Only delete old message if it's NOT a photo (i.e. not /start image)
         try:
-            await query.message.delete()
+            current_message = query.message if query else message_override
+            if current_message and not current_message.photo:
+                await current_message.delete()
         except Exception:
-            pass  # Message already deleted or failed silently
+            pass  # Message might already be deleted or non-deletable
 
+        # ✅ Send new clean menu message
         sent = await context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=text,
             reply_markup=reply_markup,
             parse_mode="HTML"
         )
 
-        # 💾 Save new menu message ID
+        # 💾 Update tracked message
         context.user_data["menu_msg_id"] = sent.message_id
 
     elif data == "about":
