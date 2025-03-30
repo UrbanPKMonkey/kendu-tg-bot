@@ -16,7 +16,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ✅ Show banner image only here
     await update.message.reply_photo(
-        photo="https://raw.githubusercontent.com/UrbanPKMonkey/kendu-tg-bot/main/assets/bot_start_banner.png"
+        photo="https://raw.githubusercontent.com/UrbanPKMonkey/kendu-tg-bot/main/assets/bot_start_banner.png",
+        disable_web_page_preview=False
     )
 
 
