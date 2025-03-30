@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from telegram.ext import ContextTypes
 
 # Helper to build back button
@@ -132,7 +132,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     elif data == "kendu_energy":
-        photo_url = "https://www.kendu.io/assets/images/kendu-energy-drink.webp"  # Replace with actual image URL
+        photo_url = "https://www.kendu.io/assets/images/kendu-energy-drink.webp"
         caption = (
             "⚡ <b>Kendu Energy Drink</b>\n\n"
             "Fuel your grind with Kendu Energy — the first community-powered energy drink built for creators, coders, traders, and builders.\n"
@@ -143,10 +143,8 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
         ])
 
-        await query.message.reply_photo(
-            photo=photo_url,
-            caption=caption,
-            parse_mode="HTML",
+        await query.message.edit_media(
+            media=InputMediaPhoto(media=photo_url, caption=caption, parse_mode="HTML"),
             reply_markup=reply_markup
         )
 
