@@ -546,6 +546,5 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             new_text=text,
             reply_markup=reply_markup,
             message_override=message_override
-        )        
-
+        )
 
