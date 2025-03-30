@@ -132,8 +132,6 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-
-
     elif data == "kendu_energy":
         photo_url = "https://www.kendu.io/assets/images/kendu-energy-drink.webp"
         caption = (
@@ -159,19 +157,192 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["menu_msg_id"] = new_msg.message_id
 
 
+    elif data == "kendu_coffee":
+        photo_url = "https://www.kendu.io/assets/images/kendu-coffee.webp"
+        caption = (
+            "☕ <b>Kendu Coffee</b>\n\n"
+            "Bold, organic, and unstoppable — Kendu Coffee fuels builders the way nature intended.\n"
+            "Wake up with purpose and taste the difference of decentralized hustle."
+        )
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Visit Site", url="https://kenducoffee.com/")],
+            [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+        ])
 
+        # Delete previous message and send image
+        await query.message.delete()
+        new_msg = await query.message.chat.send_photo(
+            photo=photo_url,
+            caption=caption,
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
+
+        # Track the new message ID so back works!
+        context.user_data["menu_msg_id"] = new_msg.message_id
+
+
+    elif data == "kendu_creator":
+        photo_url = "https://www.kendu.io/assets/images/kenducreator.png"
+        caption = (
+            "🎨 <b>Kendu Creator</b>\n\n"
+            "A space for artists, devs, designers, and thinkers to create, collab, and build for the culture.\n"
+            "Showcase your talent, contribute your skills, and be part of something legendary."
+        )
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Visit Site", url="https://kenducreator.com/")],
+            [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+        ])
+
+        # Delete previous message and send image
+        await query.message.delete()
+        new_msg = await query.message.chat.send_photo(
+            photo=photo_url,
+            caption=caption,
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
+
+        # Track the new message ID so back works!
+        context.user_data["menu_msg_id"] = new_msg.message_id      
+
+
+
+    elif data == "kendu_style":
+        photo_url = "https://www.kendu.io/assets/images/kendu-style-logo.png"
+        caption = (
+            "🧢 <b>Kendu Style</b>\n\n"
+            "Rep the movement IRL. Kendu Style is bold, raw, and unmistakably you.\n"
+            "Caps, tees, fits — made for the builders, doers, and believers."
+        )
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Visit Site", url="https://kendustyle.com/")],
+            [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+        ])
+
+        # Delete previous message and send image
+        await query.message.delete()
+        new_msg = await query.message.chat.send_photo(
+            photo=photo_url,
+            caption=caption,
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
+
+        # Track the new message ID so back works!
+        context.user_data["menu_msg_id"] = new_msg.message_id
+
+
+
+    elif data == "kendu_unstitched":
+        photo_url = "https://www.kendu.io/assets/images/kendustiched.webp"
+        caption = (
+            "🧵 <b>Kendu Unstitched</b>\n\n"
+            "Where crypto meets culture. A raw fashion expression of the Kendu spirit.\n"
+            "Unbranded. Unfiltered. Unstoppable."
+        )
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Visit Site", url="https://kendu-unstitched.square.site/")],
+            [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+        ])
+
+        # Delete previous message and send image
+        await query.message.delete()
+        new_msg = await query.message.chat.send_photo(
+            photo=photo_url,
+            caption=caption,
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
+
+        # Track the new message ID so back works!
+        context.user_data["menu_msg_id"] = new_msg.message_id
+
+  
 
     elif data == "buy_kendu":
-        text = "💰 <b>How to Buy Kendu</b>\n\nKendu is available on Ethereum, Solana, and Base.\n\nVisit /buykendu to learn more."
+        text = (
+            "💰 <b>How to Buy $KENDU</b>\n\n"
+            "Kendu is available on <b>Ethereum</b>, <b>Solana</b>, and <b>Base</b>.\n"
+            "Kendu is accessible to all. 🌍\n\n"
+
+            "At Kendu, we primarily identify as an <b>Ethereum token</b>, but we believe in broad access to $KENDU across ecosystems.\n"
+            "To support this, we’ve seeded additional liquidity pools on popular blockchains, allowing $KENDU to be bought and traded beyond Ethereum.\n\n"
+
+            "⚫ <b>Ethereum (ETH)</b>\n"
+            "🟣 <b>Solana (SOL)</b>\n"
+            "🔵 <b>Base (BASE)</b>\n\n"
+
+            "📌 <b>Recommended Tool:</b> @coinrankerbot\n"
+            "Buy directly from Telegram with speed & safety.\n\n"
+
+            "🛒 <b>Trade Links:</b>\n"
+            "⚫ <a href='https://www.dexscreener.com/ethereum/0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18'>Dexscreener (ETH)</a>\n"
+            "🟣 <a href='https://www.dexscreener.com/solana/2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45'>Dexscreener (SOL)</a>\n"
+            "🔵 <a href='https://www.dexscreener.com/base/0xef73611F98DA6E57e0776317957af61B59E09Ed7'>Dexscreener (BASE)</a>\n\n"
+
+            "🧠 <i>Always verify contract addresses at /contracts before trading.</i>\n"
+            "⚠️ <i>Kendu will never DM you. Never share your seed phrase.</i>"
+        )
+
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛒 How to Buy", callback_data="how_to_buy")],
+            [InlineKeyboardButton("🌉 How to Bridge", callback_data="how_to_bridge")],
+            [InlineKeyboardButton("🔙 Back", callback_data="menu")]
+        ])
+
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, back_button)
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
+
 
     elif data == "faq":
-        text = "❓ <b>FAQ</b>\n\nAnswers to common questions are available at /faq"
+        text = (
+            "❓ <b>Frequently Asked Questions</b>\n\n"
+
+            "🔸 <b>What is Kendu?</b>\n"
+            "Kendu is a memecoin ecosystem and social movement led by a community of builders.\n"
+            "We grow through organic action — no paid marketing, bots, or faked stats. Every individual matters.\n"
+            "Our scale is infinite because our community activation is limitless.\n\n"
+
+            "🔸 <b>Is Kendu just another dog/animal token?</b>\n"
+            "Not at all. Kendu is original IP — it’s not driven by narrative fads or animal trends.\n"
+            "It’s a canvas for expression and community building, and what you make of it is up to you.\n\n"
+
+            "🔸 <b>What will take Kendu to the next level?</b>\n"
+            "You. Your network, ideas, and conviction are the catalysts. This is grassroots crypto at its finest.\n\n"
+
+            "🔸 <b>How can I help?</b>\n"
+            "Start posting, replying, creating content, building IRL, and spreading the word.\n"
+            "Be thoughtful. Be bold. Be respectful.\n\n"
+
+            "🔸 <b>When are we reaching ___ market cap?</b>\n"
+            "There’s no fixed path — just daily effort. $10B is programmed because we activate.\n"
+            "When the noise and numbers compound, Kendu breaks through.\n\n"
+
+            "🔸 <b>Why is Kendu dipping/pumping?</b>\n"
+            "Volatility is normal. Every rise needs a breather. What matters is the community's strength during consolidation.\n"
+            "Zoom out. Stay building. We’re here for the long game.\n\n"
+
+            "🔸 <b>How can I keep my tokens safe?</b>\n"
+            "Never share your seed phrase. Use a secure wallet. Ignore fake DMs, airdrops, and connect requests.\n"
+            "When in doubt, ask the official Telegram: @Kendu\n\n"
+
+            "🧠 <i>Stay alert, stay focused, and keep building.</i>"
+        )
+
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Back", callback_data="menu")]
+        ])
+
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, back_button)
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
+
+
+
 
     elif data == "contract_addresses":
         text = (
