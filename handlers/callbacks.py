@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from telegram.ext import ContextTypes
-from utils.message_tools import smart_send_or_edit, add_black_background_to_image
+from utils.message_tools import smart_send_or_edit, add_black_background_to_image, get_contracts_text_and_markup
 
 
 # Helper to build back button
@@ -263,38 +263,127 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "buy_kendu":
         text = (
-            "💰 <b>How to Buy $KENDU</b>\n\n"
+            "💰 <b>Buy $KENDU</b>\n\n"
             "Kendu is available on <b>Ethereum</b>, <b>Solana</b>, and <b>Base</b>.\n"
             "Kendu is accessible to all. 🌍\n\n"
 
             "At Kendu, we primarily identify as an <b>Ethereum token</b>, but we believe in broad access to $KENDU across ecosystems.\n"
-            "To support this, we’ve seeded additional liquidity pools on popular blockchains, allowing $KENDU to be bought and traded beyond Ethereum.\n\n"
+            "To support this, we’ve seeded additional liquidity pools on popular blockchains, allowing $KENDU to be bought and traded beyond Ethereum.\n"
+            "There are a few easy ways to buy $KENDU. Whether you’re on Ethereum, Solana, Base, or just getting started, you’ll find simple steps below to get what you need and join the Kendu movement.\n\n"
 
             "⚫ <b>Ethereum (ETH)</b>\n"
+            "<code>0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18</code>\n"
+            "• Most active Kendu holders\n"
+            "• Highest liquidity\n"
+            "• Strongest long-term conviction\n\n"
+
             "🟣 <b>Solana (SOL)</b>\n"
-            "🔵 <b>Base (BASE)</b>\n\n"
+            "<code>2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45</code>\n"
+            "• Fast transactions\n"
+            "• Ultra-low gas fees\n"
+            "• Great for high-frequency trading\n\n"
 
-            "📌 <b>Recommended Tool:</b> @coinrankerbot\n"
-            "Buy directly from Telegram with speed & safety.\n\n"
+            "🔵 <b>Base (BASE)</b>\n"
+            "<code>0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>\n"
+            "• Low-cost memecoin ecosystem\n"
+            "• Bridges EVM familiarity with low fees\n"
+            "• Growing rapidly with community projects\n\n"
 
-            "🛒 <b>Trade Links:</b>\n"
-            "⚫ <a href='https://www.dexscreener.com/ethereum/0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18'>Dexscreener (ETH)</a>\n"
-            "🟣 <a href='https://www.dexscreener.com/solana/2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45'>Dexscreener (SOL)</a>\n"
-            "🔵 <a href='https://www.dexscreener.com/base/0xef73611F98DA6E57e0776317957af61B59E09Ed7'>Dexscreener (BASE)</a>\n\n"
-
-            "🧠 <i>Always verify contract addresses at /contracts before trading.</i>\n"
-            "⚠️ <i>Kendu will never DM you. Never share your seed phrase.</i>"
+            "📌 <i>Tip:</i> Make sure you're using a trusted wallet (like Metamask or Phantom) and verify contract addresses directly from the official /contracts section."
         )
 
         reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🛒 How to Buy", callback_data="how_to_buy")],
-            [InlineKeyboardButton("🌉 How to Bridge", callback_data="how_to_bridge")],
+            [InlineKeyboardButton("⚫ Buy on Ethereum (ETH)", callback_data="buy_eth")],
+            [InlineKeyboardButton("🟣 Buy on Solana (SOL)", callback_data="buy_sol")],
+            [InlineKeyboardButton("🔵 Buy on Base (BASE)", callback_data="buy_base")],
+            [InlineKeyboardButton("🔁 How to Bridge", callback_data="how_to_bridge")],
             [InlineKeyboardButton("🔙 Back", callback_data="menu")]
         ])
 
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
             await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
+
+    elif data == "buy_eth":
+        text = (
+            "⚫ <b>Buy on Ethereum (ETH)</b>\n\n"
+            "Ethereum is Kendu’s home — and the primary chain for $KENDU.\n\n"
+
+            "<b>Why buy on ETH?</b>\n"
+            "• Deepest liquidity 💧\n"
+            "• Largest number of long-term holders 🧠\n"
+            "• Full access to core Ethereum dApps (e.g. Uniswap, Etherscan, etc.)\n"
+            "• Best for long-term conviction plays 💎\n\n"
+
+            "<b>Contract Address:</b>\n"
+            "<code>0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18</code>\n\n"
+            "⚠️ Always verify the contract address before trading."
+        )
+
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❓ How to Buy on ETH", callback_data="how_to_buy_eth")],
+            [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
+        ])
+
+        msg_id = context.user_data.get("menu_msg_id")
+        if msg_id:
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
+
+    elif data == "buy_sol":
+        text = (
+            "🟣 <b>Buy on Solana (SOL)</b>\n\n"
+            "Solana offers lightning-fast speeds and almost zero gas fees.\n\n"
+
+            "<b>Why buy on SOL?</b>\n"
+            "• Near-instant transactions ⚡\n"
+            "• Virtually no gas fees 🤑\n"
+            "• Ideal for trading smaller sizes or onboarding friends 👥\n"
+            "• Great for degen speedruns and creators 🚀\n\n"
+
+            "<b>Contract Address:</b>\n"
+            "<code>2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45</code>\n\n"
+            "⚠️ Always verify the contract address before trading."
+        )
+
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❓ How to Buy on SOL", callback_data="how_to_buy_sol")],
+            [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
+        ])
+
+        msg_id = context.user_data.get("menu_msg_id")
+        if msg_id:
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
+
+    elif data == "buy_base":
+        text = (
+            "🔵 <b>Buy on Base (BASE)</b>\n\n"
+            "Base is a fast-growing L2 backed by Coinbase.\n\n"
+
+            "<b>Why buy on BASE?</b>\n"
+            "• Fast transactions ⚡\n"
+            "• Low fees compared to Ethereum 🧾\n"
+            "• Easy onboarding via Coinbase 🏦\n"
+            "• Base has one of the strongest meme communities 🔥\n\n"
+
+            "<b>Contract Address:</b>\n"
+            "<code>0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>\n\n"
+            "⚠️ Always verify the contract address before trading."
+        )
+
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❓ How to Buy on BASE", callback_data="how_to_buy_base")],
+            [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
+        ])
+
+        msg_id = context.user_data.get("menu_msg_id")
+        if msg_id:
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
+
+
 
 
     elif data == "faq":
@@ -402,18 +491,10 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     elif data == "contract_addresses":
-        text = (
-            "🧾 <b>Contract Addresses</b>\n\n"
-            "⚫ <b>Ethereum (ETH):</b>\n"
-            "<code>   0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18</code>\n\n"
-            "🟣 <b>Solana (SOL):</b>\n"
-            "<code>   2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45</code>\n\n"
-            "🔵 <b>Base (BASE):</b>\n"
-            "<code>   0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>\n\n"
-        )
+        text, reply_markup = get_contracts_text_and_markup()
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, back_button)
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
 
     elif data == "follow_links":
         text = "🔗 <b>Follow Kendu</b>\n\nExplore our ecosystem and stay connected 👇"

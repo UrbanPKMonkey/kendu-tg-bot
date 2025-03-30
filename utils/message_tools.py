@@ -1,6 +1,5 @@
-from telegram import InlineKeyboardMarkup, Update, InputMediaPhoto
+from telegram import InlineKeyboardMarkup, Update, InputMediaPhoto, InlineKeyboardButton
 from telegram.ext import ContextTypes
-
 
 async def smart_send_or_edit(
     query,
@@ -61,3 +60,21 @@ async def add_black_background_to_image(image_url: str) -> BytesIO:
     background.save(output, format="PNG")
     output.seek(0)
     return output
+
+
+def get_contracts_text_and_markup():
+    text = (
+        "🧾 <b>Contract Addresses</b>\n\n"
+        "⚫ <b>Ethereum (ETH):</b>\n"
+        "<code>  0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18</code>\n\n"
+        "🟣 <b>Solana (SOL):</b>\n"
+        "<code>  2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45</code>\n\n"
+        "🔵 <b>Base (BASE):</b>\n"
+        "<code>  0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>"
+    )
+
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Back", callback_data="menu")]
+    ])
+
+    return text, reply_markup

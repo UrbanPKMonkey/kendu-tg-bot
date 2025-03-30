@@ -1,5 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from utils.message_tools import get_contracts_text_and_markup
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
@@ -79,7 +80,8 @@ async def buykendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("💰 Hit 'Buy Kendu' in the Menu to learn how to get $KENDU on ETH, SOL & BASE.")
 
 async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🧾 Hit 'Contract Addresses' in the Menu to get full chain listings.")
+    text, reply_markup = get_contracts_text_and_markup()
+    await update.message.reply_text(text, parse_mode="HTML", reply_markup=reply_markup)
 
 async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❓ Check out the FAQ in the Menu to find answers to common questions.")
