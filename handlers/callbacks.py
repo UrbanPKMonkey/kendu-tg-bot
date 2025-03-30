@@ -34,14 +34,25 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        sent = await query.message.reply_text(
-            "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-            parse_mode="HTML",
-            reply_markup=reply_markup
-        )
+        msg_id = context.user_data.get("menu_msg_id")
 
-        # Store message ID for future edits
-        context.user_data["menu_msg_id"] = sent.message_id
+        if msg_id:
+            # ✅ Menu already exists — just update it
+            await context.bot.edit_message_text(
+                chat_id=query.message.chat_id,
+                message_id=msg_id,
+                text="🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
+                parse_mode="HTML",
+                reply_markup=reply_markup
+            )
+        else:
+            # 🆕 First time: send the menu and store its ID
+            sent = await query.message.reply_text(
+                "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
+                parse_mode="HTML",
+                reply_markup=reply_markup
+            )
+            context.user_data["menu_msg_id"] = sent.message_id
 
     elif data == "about":
         text = "🧠 <b>About Kendu</b>\n\nKendu is a decentralized ecosystem driven by community conviction."
