@@ -55,13 +55,13 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Detect how the command was triggered
     if update.callback_query:
         await update.callback_query.message.reply_text(
-            "📚 <b>Kendu Main Menu</b>\nTap an option below to explore:",
+            "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
             parse_mode="HTML",
             reply_markup=reply_markup
         )
     else:
         await update.message.reply_text(
-            "📚 <b>Kendu Main Menu</b>\nTap an option below to explore:",
+            "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
             parse_mode="HTML",
             reply_markup=reply_markup
         )
