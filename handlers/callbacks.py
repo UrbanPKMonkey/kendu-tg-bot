@@ -403,30 +403,36 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "contract_addresses":
         text = (
             "🧾 <b>Contract Addresses</b>\n\n"
-            "⚫ <b>Ethereum (ETH):</b> 0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18\n"
-            "🟣 <b>Solana (SOL):</b> 2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45\n"
-            "🔵 <b>Base (BASE):</b> 0xef73611F98DA6E57e0776317957af61B59E09Ed7\n\n"
+            "⚫ <b>Ethereum (ETH):</b>\n"
+            "<code>     0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18</code>\n\n"
+            "🟣 <b>Solana (SOL):</b>\n"
+            "<code>     2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45</code>\n\n"
+            "🔵 <b>Base (BASE):</b>\n"
+            "<code>     0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>\n\n"
         )
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
             await edit_menu_response(context, chat_id, msg_id, text, back_button)
 
     elif data == "follow_links":
-        text = (
-            "🔗 <b>Follow Kendu</b>\n\n"
-            "🌐 <a href='https://kendu.io'>kendu.io</a>\n"
-            "💬 <a href='https://t.me/Kendu'>Telegram</a>\n"
-            "📣 <a href='https://x.com/KenduInu'>Twitter/X</a>\n"
-            "📰 <a href='https://www.reddit.com/r/KenduInu_Ecosystem'>Reddit</a>\n"
-            "🔧 <a href='https://www.dextools.io/app/en/ether/pair-explorer/0xd9f2a7471d1998c69de5cae6df5d3f070f01df9f?t=1708519310322'>Dextools</a>\n"
-            "🎥 <a href='https://www.youtube.com/@KenduInuArmy'>YouTube</a>\n"
-            "📸 <a href='https://www.instagram.com/kenduinuofficial'>Instagram</a>\n"
-            "💹 <a href='https://stocktwits.com/KenduCTO'>Stocktwits</a>\n"
-            "⚫ <a href='https://etherscan.io/token/0xaa95f26e30001251fb905d264aa7b00ee9df6c18'>Etherscan (ETH)</a>\n"
-            "🟣 <a href='https://solscan.io/token/2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45'>Solscan (SOL)</a>\n"
-            "🔵 <a href='https://basescan.org/token/0xef73611f98da6e57e0776317957af61b59e09ed7'>Basescan (BASE)</a>\n"
-            "💰 <a href='https://coinmarketcap.com/currencies/kendu-inu/'>CoinMarketCap</a>\n\n"
-        )
+        text = "🔗 <b>Follow Kendu</b>\n\nExplore our ecosystem and stay connected 👇"
+
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Official Website", url="https://kendu.io")],
+            [InlineKeyboardButton("💬 Telegram", url="https://t.me/Kendu")],
+            [InlineKeyboardButton("📣 Twitter/X", url="https://x.com/KenduInu")],
+            [InlineKeyboardButton("📰 Reddit", url="https://www.reddit.com/r/KenduInu_Ecosystem")],
+            [InlineKeyboardButton("🔧 Dextools", url="https://www.dextools.io/app/en/ether/pair-explorer/0xd9f2a7471d1998c69de5cae6df5d3f070f01df9f?t=1708519310322")],
+            [InlineKeyboardButton("🎥 YouTube", url="https://www.youtube.com/@KenduInuArmy")],
+            [InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/kenduinuofficial")],
+            [InlineKeyboardButton("💹 Stocktwits", url="https://stocktwits.com/KenduCTO")],
+            [InlineKeyboardButton("⚫ Etherscan (ETH)", url="https://etherscan.io/token/0xaa95f26e30001251fb905d264aa7b00ee9df6c18")],
+            [InlineKeyboardButton("🟣 Solscan (SOL)", url="https://solscan.io/token/2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45")],
+            [InlineKeyboardButton("🔵 Basescan (BASE)", url="https://basescan.org/token/0xef73611f98da6e57e0776317957af61b59e09ed7")],
+            [InlineKeyboardButton("💰 CoinMarketCap", url="https://coinmarketcap.com/currencies/kendu-inu/")],
+            [InlineKeyboardButton("🔙 Back", callback_data="menu")]
+        ])
+
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, back_button)
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
