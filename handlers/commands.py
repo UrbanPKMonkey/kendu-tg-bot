@@ -9,9 +9,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
         [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
         [InlineKeyboardButton("📄 Whitepaper", callback_data="whitepaper")],
-        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")],
-        [InlineKeyboardButton("📊 Market Info", callback_data="market_info")],
-        [InlineKeyboardButton("🔐 Security Status", callback_data="security")]
+        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -53,7 +51,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
         [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
         [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
-        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")],
+        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
