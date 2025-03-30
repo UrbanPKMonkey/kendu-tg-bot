@@ -316,12 +316,15 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Full access to core Ethereum dApps (e.g. Uniswap, Etherscan, etc.)\n"
             "• Best for long-term conviction plays 💎\n\n"
 
+            "<b>Recommended DEX:</b> Uniswap\n\n"
+
             "<b>Contract Address:</b>\n"
             "<code>0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18</code>\n\n"
             "⚠️ Always verify the contract address before trading."
         )
 
         reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛒 Buy on Uniswap", url="https://app.uniswap.org/swap?outputCurrency=0xaa95f26e30001251fb905d264aa7b00ee9df6c18&inputCurrency=ETH")],
             [InlineKeyboardButton("❓ How to Buy on ETH", callback_data="how_to_buy_eth")],
             [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
         ])
@@ -329,6 +332,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
             await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
 
 
     elif data == "buy_sol":
@@ -341,6 +345,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Virtually no gas fees 🤑\n"
             "• Ideal for trading smaller sizes or onboarding friends 👥\n"
             "• Great for degen speedruns and creators 🚀\n\n"
+            "<b>Recommended DEX:</b> Raydium\n\n"
 
             "<b>Contract Address:</b>\n"
             "<code>2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45</code>\n\n"
@@ -348,6 +353,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛒 Buy on Raydium", url="https://raydium.io/swap/?inputMint=sol&outputMint=2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45")],
             [InlineKeyboardButton("❓ How to Buy on SOL", callback_data="how_to_buy_sol")],
             [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
         ])
@@ -355,6 +361,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
             await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+
 
 
     elif data == "buy_base":
@@ -367,6 +374,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Low fees compared to Ethereum 🧾\n"
             "• Easy onboarding via Coinbase 🏦\n"
             "• Base has one of the strongest meme communities 🔥\n\n"
+            "<b>Recommended DEX:</b> Aerodrome\n\n"
 
             "<b>Contract Address:</b>\n"
             "<code>0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>\n\n"
@@ -374,6 +382,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛒 Buy on Aerodrome", url="https://aerodrome.finance/swap?from=eth&to=0xef73611f98da6e57e0776317957af61b59e09ed7&chain0=8453&chain1=8453")],
             [InlineKeyboardButton("❓ How to Buy on BASE", callback_data="how_to_buy_base")],
             [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
         ])
