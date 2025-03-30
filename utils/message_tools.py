@@ -59,21 +59,21 @@ async def smart_send_or_edit(
             except Exception:
                 pass  # Message already deleted or expired
 
-    # Clean up original slash command (e.g. /menu, /about)
+    # Send a new fallback message (for slash commands)
     if message_override:
         try:
+            # Delete the original /command message (e.g. /menu, /about)
             await message_override.delete()
         except Exception:
             pass
 
-    # Send the new menu message
-    sent = await context.bot.send_message(
-        chat_id=chat_id,
-        text=new_text,
-        reply_markup=reply_markup,
-        parse_mode=parse_mode
-    )
-    context.user_data["menu_msg_id"] = sent.message_id
+        sent = await context.bot.send_message(
+            chat_id=chat_id,
+            text=new_text,
+            reply_markup=reply_markup,
+            parse_mode=parse_mode
+        )
+        context.user_data["menu_msg_id"] = sent.message_id
 
 
 async def add_black_background_to_image(image_url: str) -> BytesIO:
