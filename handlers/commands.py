@@ -40,6 +40,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "**SOL:**  2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45\n"
         "**BASE:** 0xef73611F98DA6E57e0776317957af61B59E09Ed7\n\n"                        
         "Made with ❤️ by the Kendu Community.",
+        parse_mode="Markdown",
         reply_markup=reply_markup,
         disable_web_page_preview=True
     )
