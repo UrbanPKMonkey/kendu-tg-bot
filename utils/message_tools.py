@@ -44,6 +44,7 @@ async def smart_send_or_edit(
 
     if old_msg_id:
         try:
+            # Try to edit existing message
             await context.bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=old_msg_id,
@@ -53,16 +54,15 @@ async def smart_send_or_edit(
             )
             return
         except Exception:
-            # Editing failed (e.g. media vs. text), try delete
+            # Editing failed — try deleting old
             try:
                 await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
             except Exception:
-                pass  # Message already deleted or expired
+                pass  # Already deleted
 
-    # Send a new fallback message (for slash commands)
+    # Slash command path — delete the command msg first
     if message_override:
         try:
-            # Delete the original /command message (e.g. /menu, /about)
             await message_override.delete()
         except Exception:
             pass
@@ -74,6 +74,7 @@ async def smart_send_or_edit(
             parse_mode=parse_mode
         )
         context.user_data["menu_msg_id"] = sent.message_id
+
 
 
 async def add_black_background_to_image(image_url: str) -> BytesIO:
