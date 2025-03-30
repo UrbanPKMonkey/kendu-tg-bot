@@ -106,6 +106,8 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     elif data == "ecosystem":
+        await query.answer()
+
         photo_url = "https://www.kendu.io/assets/images/kendu-eco-bg.webp"  # Use a clean ecosystem image
         caption = (
             "🌐 <b>Kendu Ecosystem</b>\n\n"
