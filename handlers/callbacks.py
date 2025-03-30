@@ -137,13 +137,23 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             [InlineKeyboardButton("🔙 Back", callback_data="menu")]
         ])
 
-        await smart_send_or_edit(
-            query=query,
-            context=context,
-            new_text=text,
+        # Delete old message first
+        try:
+            current_message = query.message if query else message_override
+            if current_message:
+                await current_message.delete()
+        except Exception:
+            pass
+
+        # Send fresh Ecosystem message
+        sent = await context.bot.send_message(
+            chat_id=chat_id,
+            text=text,
             reply_markup=reply_markup,
-            message_override=message_override
+            parse_mode="HTML"
         )
+
+        context.user_data["menu_msg_id"] = sent.message_id
 
 
     elif data == "kendu_energy":
