@@ -1,16 +1,28 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from handlers.callbacks import handle_button
+
+
+# Reuse from message_tools if needed (e.g., for contracts)
 from utils.message_tools import get_contracts_text_and_markup
 
+
+# 🔁 Helper: simulate callback button press from slash commands
+def make_fake_query(update: Update, data: str):
+    return type("FakeQuery", (), {
+        "data": data,
+        "message": update.message,
+        "answer": lambda: None
+    })()
+
+
+# ✅ /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
     ]
-
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    
-    # 1️⃣ Show image with short caption + button
     await update.message.reply_photo(
         photo="https://i.imgur.com/r0i7fuG.png",
         caption=(
@@ -39,52 +51,49 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<code>   0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>\n\n"
             "✅ <i><a href='https://skynet.certik.com/projects/kendu-inu'>CertiK</a> audit completed</i>\n\n"
             "Made with ❤️ by the Kendu Community."
-            ),
+        ),
         parse_mode="HTML",
         reply_markup=reply_markup
     )
 
+
+# ✅ /menu command
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("🧠 About", callback_data="about")],
-        [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
-        [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
-        [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
-        [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
-        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
-    ]
+    fake_query = make_fake_query(update, "menu")
+    await handle_button(fake_query, context)
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Detect how the command was triggered
-    if update.callback_query:
-        await update.callback_query.message.reply_text(
-            "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-            parse_mode="HTML",
-            reply_markup=reply_markup
-        )
-    else:
-        await update.message.reply_text(
-            "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-            parse_mode="HTML",
-            reply_markup=reply_markup
-        )
-
+# ✅ /about command
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🧠 Tap the Menu and choose 'About' to learn what Kendu is all about!")
+    fake_query = make_fake_query(update, "about")
+    await handle_button(fake_query, context)
 
+
+# ✅ /eco command
 async def eco(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🌐 Use the Menu and tap 'Ecosystem' to dive into all Kendu is building!")
+    fake_query = make_fake_query(update, "ecosystem")
+    await handle_button(fake_query, context)
 
+
+# ✅ /buykendu command
 async def buykendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("💰 Hit 'Buy Kendu' in the Menu to learn how to get $KENDU on ETH, SOL & BASE.")
+    fake_query = make_fake_query(update, "buy_kendu")
+    await handle_button(fake_query, context)
 
+
+# ✅ /contracts command
 async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text, reply_markup = get_contracts_text_and_markup()
-    await update.message.reply_text(text, parse_mode="HTML", reply_markup=reply_markup)
+    fake_query = make_fake_query(update, "contract_addresses")
+    await handle_button(fake_query, context)
 
+
+# ✅ /faq command
 async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("❓ Check out the FAQ in the Menu to find answers to common questions.")
+    fake_query = make_fake_query(update, "faq")
+    await handle_button(fake_query, context)
 
+
+# ✅ /follow command
 async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🔗 Head to 'Follow' in the Menu to discover Kendu's official links.")        
+    fake_query = make_fake_query(update, "follow_links")
+    await handle_button(fake_query, context)

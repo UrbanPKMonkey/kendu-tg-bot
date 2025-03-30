@@ -47,12 +47,12 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=reply_markup
             )
         else:
-            sent = await query.message.reply_text(
-                "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-                parse_mode="HTML",
+            await smart_send_or_edit(
+                query=query,
+                context=context,
+                new_text="🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
                 reply_markup=reply_markup
             )
-            context.user_data["menu_msg_id"] = sent.message_id
 
     elif data == "about":
         text = (
