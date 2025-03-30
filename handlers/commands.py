@@ -68,3 +68,21 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=reply_markup
         )
+
+async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🧠 Tap the Menu and choose 'About' to learn what Kendu is all about!")
+
+async def eco(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🌐 Use the Menu and tap 'Ecosystem' to dive into all Kendu is building!")
+
+async def buykendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("💰 Hit 'Buy Kendu' in the Menu to learn how to get $KENDU on ETH, SOL & BASE.")
+
+async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🧾 Hit 'Contract Addresses' in the Menu to get full chain listings.")
+
+async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("❓ Check out the FAQ in the Menu to find answers to common questions.")
+
+async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🔗 Head to 'Follow' in the Menu to discover Kendu's official links.")        
