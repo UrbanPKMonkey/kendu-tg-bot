@@ -18,12 +18,17 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
         reply_markup=reply_markup
     )
 
-async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    data = query.data
+async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, data_override: str = None, message_override=None):
+    query = update.callback_query if update and update.callback_query else None
+    data = data_override or (query.data if query else None)
+    message = message_override or (query.message if query else None)
+    chat_id = message.chat_id if message else None
 
-    await query.answer()
-    chat_id = query.message.chat_id
+    if query:
+        await query.answer()
+
+    if not data or not message or not chat_id:
+        return
 
     if data == "menu":
         keyboard = [
