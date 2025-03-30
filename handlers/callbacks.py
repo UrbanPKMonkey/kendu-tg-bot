@@ -55,7 +55,20 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data["menu_msg_id"] = sent.message_id
 
     elif data == "about":
-        text = "🧠 <b>About Kendu</b>\n\nKendu is a decentralized ecosystem driven by community conviction."
+        text = (
+            "🧠 <b>About Kendu</b>\n\n"
+            "Kendu is a movement that empowers you to turn your life goals into reality. Take initiative and the community will fuel your journey. <i>What is your dream?</i>\n\n"
+            "Kendu gives its holders the power to shape their future. It is a social movement and a crypto brand umbrella that houses multiple community-led businesses, products, and endeavours. We inspire a culture of hard work, excellence, and accountability across our vibrant community.\n\n"
+            "We believe in the power of both the individual and the collective. Unleash your potential and witness what you're truly capable of, compounding the already unstoppable innovation and tenacity of the Kendu community. It's all for one, and one for all. We work around the clock, every day of the year.\n\n"
+            "Kendu attracts builders, doers, go-getters, artists, and the good—those who create, not wait. We invite you to dive into the next multi-billion dollar crypto giant, Kendu.\n\n"
+            "<b>Bringing crypto IRL</b>\n"
+            "Kendu sets out to do the impossible: build a purely organic crypto brand in a sea of cabal tokens, pump and dumps, insider trading, snipes, bundles, manufactured hype and FOMO. The game has been rigged against you until now. Build with Kendu and watch your ideas come to life. We grow with a grand long-term vision, brick by brick, one heart at a time.\n\n"
+            "<b>A masterclass in community building</b>\n"
+            "Kendu is a truly organic movement with no paid engagement or fake activity. Holders are encouraged to step up in their own way, whether through social posts, speaking on Spaces, building Kendu businesses, or repping Kendu IRL. Tokens only reach super scale with full community activation. Be loud, be unignorable, do what others won’t. The more who activate, the faster Kendu rises. Who will you be in Kendu?\n\n"
+            "<b>Kendu man saves DEFI</b>\n"
+            "In Q3 2024, Kendu held one of DeFi’s biggest giveaways—1 billion $KENDU, worth around $50,000 at the time, for the most creative promo video. Over 20 entries came in, and OG member Trips won with his “Kendu Man” video. He also proudly sports one of the largest Kendu tattoos across his ribs.\n\n"
+            "<b>We don't gamble. We work!</b>"
+        )
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
             await edit_menu_response(context, chat_id, msg_id, text, back_button)
