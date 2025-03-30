@@ -108,8 +108,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "ecosystem":
         await query.answer()
 
-        photo_url = "https://www.kendu.io/assets/images/kendu-eco-bg.webp"  # Use a clean ecosystem image
-        caption = (
+        text = (
             "🌐 <b>Kendu Ecosystem</b>\n\n"
             "Kendu is more than a token —\n"
             "It’s a <b>permissionless, decentralized brand</b> with no limits on what can be built.\n\n"
@@ -131,8 +130,9 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 Back", callback_data="menu")]
         ])
 
-        await query.message.edit_media(
-            media=InputMediaPhoto(media=photo_url, caption=caption, parse_mode="HTML"),
+        await query.message.edit_text(
+            text=text,
+            parse_mode="HTML",
             reply_markup=reply_markup
         )
 
