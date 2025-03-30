@@ -131,24 +131,24 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await edit_menu_response(context, chat_id, msg_id, text, back_button)
 
 
-        elif data == "kendu_energy":
-            photo_url = "https://www.kendu.io/assets/images/kendu-energy-drink.webp"  # Replace with actual image URL
-            caption = (
-                "⚡ <b>Kendu Energy Drink</b>\n\n"
-                "Fuel your grind with Kendu Energy — the first community-powered energy drink built for creators, coders, traders, and builders.\n"
-                "All flavor. No compromise. One sip to become a chad."
-            )
-            reply_markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton("🌐 Visit Site", url="https://kenduenergy.com/products/energy-drinks-usa-can-aus")],
-                [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
-            ])
+    elif data == "kendu_energy":
+        photo_url = "https://www.kendu.io/assets/images/kendu-energy-drink.webp"  # Replace with actual image URL
+        caption = (
+            "⚡ <b>Kendu Energy Drink</b>\n\n"
+            "Fuel your grind with Kendu Energy — the first community-powered energy drink built for creators, coders, traders, and builders.\n"
+            "All flavor. No compromise. One sip to become a chad."
+        )
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🌐 Visit Site", url="https://kenduenergy.com/products/energy-drinks-usa-can-aus")],
+            [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+        ])
 
-            await query.message.reply_photo(
-                photo=photo_url,
-                caption=caption,
-                parse_mode="HTML",
-                reply_markup=reply_markup
-            )
+        await query.message.reply_photo(
+            photo=photo_url,
+            caption=caption,
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
 
 
 
