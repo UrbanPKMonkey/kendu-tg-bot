@@ -31,3 +31,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Made with ❤️ by the Kendu Community.",
         reply_markup=reply_markup
     )
+
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Reuse the same layout from /start
+    keyboard = [
+        [InlineKeyboardButton("🧠 About", callback_data="about")],
+        [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
+        [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
+        [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
+        [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
+        [InlineKeyboardButton("📄 Whitepaper", callback_data="whitepaper")],
+        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")],
+        [InlineKeyboardButton("📊 Market Info", callback_data="market_info")],
+        [InlineKeyboardButton("🔐 Security Status", callback_data="security")]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
+        "🧭 *Explore the Kendu Ecosystem:*",
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
+    )    
