@@ -52,8 +52,16 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.callback_query.message.reply_text(
-        "🤖 <b>Kendu Main Menu</b>\nTap an option below to explore:",
-        parse_mode="HTML",
-        reply_markup=reply_markup
-    )
+    # Detect how the command was triggered
+    if update.callback_query:
+        await update.callback_query.message.reply_text(
+            "📚 <b>Kendu Main Menu</b>\nTap an option below to explore:",
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
+    else:
+        await update.message.reply_text(
+            "📚 <b>Kendu Main Menu</b>\nTap an option below to explore:",
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
