@@ -59,7 +59,16 @@ async def smart_send_or_edit(
             except Exception:
                 pass  # Message already deleted or expired
 
-    sent = await message.reply_text(
+    # Clean up original slash command (e.g. /menu, /about)
+    if message_override:
+        try:
+            await message_override.delete()
+        except Exception:
+            pass
+
+    # Send the new menu message
+    sent = await context.bot.send_message(
+        chat_id=chat_id,
         text=new_text,
         reply_markup=reply_markup,
         parse_mode=parse_mode
