@@ -44,13 +44,21 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
         ])
 
-        await smart_send_or_edit(
-            query=query,
-            context=context,
-            new_text=text,
+        # 🧼 Always delete the previous message if it's a photo (like from /start)
+        try:
+            await query.message.delete()
+        except Exception:
+            pass  # Message already deleted or failed silently
+
+        sent = await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=text,
             reply_markup=reply_markup,
-            message_override=message_override
+            parse_mode="HTML"
         )
+
+        # 💾 Save new menu message ID
+        context.user_data["menu_msg_id"] = sent.message_id
 
     elif data == "about":
         text = (
