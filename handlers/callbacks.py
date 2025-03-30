@@ -137,22 +137,21 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             [InlineKeyboardButton("🔙 Back", callback_data="menu")]
         ])
 
-        # Delete old message first
+        # Always delete previous tracked menu message if it exists
+        old_msg_id = context.user_data.get("menu_msg_id")
         try:
-            current_message = query.message if query else message_override
-            if current_message:
-                await current_message.delete()
+            if old_msg_id:
+                await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
         except Exception:
             pass
 
-        # Send fresh Ecosystem message
+        # Send fresh message
         sent = await context.bot.send_message(
             chat_id=chat_id,
             text=text,
             reply_markup=reply_markup,
             parse_mode="HTML"
         )
-
         context.user_data["menu_msg_id"] = sent.message_id
 
 
