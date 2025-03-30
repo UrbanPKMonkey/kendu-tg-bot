@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -7,7 +7,25 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.answer()  # Always acknowledge the query
 
-    if data == "about":
+    if data == "menu":
+        keyboard = [
+            [InlineKeyboardButton("🧠 About", callback_data="about")],
+            [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
+            [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
+            [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
+            [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
+            [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.message.reply_text(
+            "📚 <b>Kendu Main Menu</b>\nTap an option below to explore:",
+            parse_mode="HTML",
+            reply_markup=reply_markup
+        )
+        return
+
+    elif data == "about":
         await query.message.reply_text("🧠 Kendu is a decentralized ecosystem driven by community conviction.")
     elif data == "ecosystem":
         await query.message.reply_text("🌐 The Kendu ecosystem includes tools, community apps, and real-world products.")
