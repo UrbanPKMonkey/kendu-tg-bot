@@ -24,11 +24,19 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         try:
-            await query.message.edit_text(
-                "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-                parse_mode="HTML",
-                reply_markup=reply_markup
-            )
+            # ✅ If message is a photo with caption, use edit_caption()
+            if query.message.photo:
+                await query.message.edit_caption(
+                    caption="🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
+                    parse_mode="HTML",
+                    reply_markup=reply_markup
+                )
+            else:
+                await query.message.edit_text(
+                    "🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
+                    parse_mode="HTML",
+                    reply_markup=reply_markup
+                )
         except Exception as e:
             await query.message.reply_text(f"⚠️ Error: {e}")
 
