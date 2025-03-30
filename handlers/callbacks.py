@@ -1,6 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from telegram.ext import ContextTypes
-from utils.message_tools import smart_send_or_edit
+from utils.message_tools import smart_send_or_edit, add_black_background_to_image
+
 
 # Helper to build back button
 back_button = InlineKeyboardMarkup(
@@ -209,7 +210,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     elif data == "kendu_style":
-        photo_url = "https://www.kendu.io/assets/images/kendu-style-logo.png"
+        photo_url = await add_black_background_to_image("https://www.kendu.io/assets/images/kendu-style-logo.png")
         caption = (
             "🧢 <b>Kendu Style</b>\n\n"
             "Rep the movement IRL. Kendu Style is bold, raw, and unmistakably you.\n"

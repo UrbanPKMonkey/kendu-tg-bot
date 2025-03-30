@@ -39,3 +39,25 @@ async def smart_send_or_edit(
         parse_mode=parse_mode
     )
     context.user_data["menu_msg_id"] = sent.message_id
+
+from PIL import Image
+import requests
+from io import BytesIO
+
+async def add_black_background_to_image(image_url: str) -> BytesIO:
+    """
+    Loads an image from URL, adds a black background if it has transparency,
+    and returns a BytesIO object ready for Telegram upload.
+    """
+    response = requests.get(image_url)
+    original = Image.open(BytesIO(response.content)).convert("RGBA")
+
+    # Create black background the same size as original
+    background = Image.new("RGB", original.size, (0, 0, 0))
+    background.paste(original, mask=original.split()[3])  # Use alpha channel as mask
+
+    output = BytesIO()
+    output.name = "with_black_bg.png"
+    background.save(output, format="PNG")
+    output.seek(0)
+    return output
