@@ -3,25 +3,15 @@ from telegram.ext import ContextTypes
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("🧠 About", callback_data="about")],
-        [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
-        [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
-        [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
-        [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
-        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
+        [InlineKeyboardButton("📚 Menu", callback_data="menu")]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     
-    # ✅ Show banner image only here
+    # ✅ start message
     await update.message.reply_text(
         "https://raw.githubusercontent.com/UrbanPKMonkey/kendu-tg-bot/main/assets/bot_start_banner.png"
-    )
-
-
-    # ✅ Follow up with intro message
-    await update.message.reply_text(
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
         "<b>We don’t gamble, we work.</b> 💪\n\n"
         "Explore the projects, get involved, and join the movement.\n\n"
