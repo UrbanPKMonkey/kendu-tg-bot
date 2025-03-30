@@ -2,6 +2,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMe
 from telegram.ext import ContextTypes
 from utils.message_tools import smart_send_or_edit, add_black_background_to_image, get_contracts_text_and_markup
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 # Helper to build back button
 back_button = InlineKeyboardMarkup(
@@ -27,34 +30,27 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
         await query.answer()
 
     if data == "menu":
-        keyboard = [
+        text = (
+            "🤖 <b>Kendu Main Menu</b>\n\n"
+            "Tap an option below to explore:"
+        )
+
+        reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🧠 About", callback_data="about")],
             [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
             [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
             [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
             [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
             [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        ])
 
-        msg_id = context.user_data.get("menu_msg_id")
-
-        if msg_id:
-            await context.bot.edit_message_text(
-                chat_id=query.message.chat_id,
-                message_id=msg_id,
-                text="🤖 <b>Kendu Main Menu</b>\n\nTap an option below to explore:",
-                parse_mode="HTML",
-                reply_markup=reply_markup
-            )
-        else:
-            await smart_send_or_edit(
-                query=query,
-                context=context,
-                new_text=text,
-                reply_markup=reply_markup,
-                message_override=message_override
-            )
+        await smart_send_or_edit(
+            query=query,
+            context=context,
+            new_text=text,
+            reply_markup=reply_markup,
+            message_override=message_override
+        )
 
     elif data == "about":
         text = (
@@ -538,3 +534,18 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
             reply_markup=reply_markup,
             message_override=message_override
         )
+
+    else:
+        text = "⚠️ Unknown command. Please use /menu to get back to the main screen."
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🤖 Back to Menu", callback_data="menu")]
+        ])
+        await smart_send_or_edit(
+            query=query,
+            context=context,
+            new_text=text,
+            reply_markup=reply_markup,
+            message_override=message_override
+        )        
+
+
