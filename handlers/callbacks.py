@@ -128,7 +128,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         msg_id = context.user_data.get("menu_msg_id")
         if msg_id:
-            await edit_menu_response(context, chat_id, msg_id, text, back_button)
+            await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
 
 
     elif data == "kendu_energy":
