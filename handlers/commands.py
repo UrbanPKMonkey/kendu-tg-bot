@@ -3,26 +3,32 @@ from telegram.ext import ContextTypes
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("📚 Menu", callback_data="menu")]
+        [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     
-    # ✅ start message
+    # 1️⃣ Show image with short caption + button
+    await update.message.reply_photo(
+        photo="https://i.imgur.com/r0i7fuG.png",
+        caption="<b>Welcome to the Official Kendu Bot</b>\nTap below to begin exploring the Kendu ecosystem. 🚀",
+        parse_mode="HTML",
+        reply_markup=reply_markup
+    )
+
+    # 2️⃣ Follow-up message with full welcome info
     await update.message.reply_text(
-        "https://i.imgur.com/r0i7fuG.png"
-        "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
         "<b>We don’t gamble, we work.</b> 💪\n\n"
         "Explore the projects, get involved, and join the movement.\n\n"
         "﹎﹎﹎﹎﹎﹎﹎\n\n"
-        "📚 Tap /menu to get started or explore:\n\n"
-        "/about     → What is Kendu?\n"
-        "/eco       → Our Ecosystem\n"
-        "/buykendu  → How to Buy\n"
-        "/faq       → Questions & Answers\n"
-        "/contracts → Contract Addresses\n"
-        "/follow    → Socials & Links\n"
+        "🤖 Tap <code>/menu</code> to get started or explore:\n\n"
+        "<code>/about</code>     → What is Kendu?\n"
+        "<code>/eco</code>       → Our Ecosystem\n"
+        "<code>/buykendu</code>  → How to Buy\n"
+        "<code>/faq</code>       → Questions & Answers\n"
+        "<code>/contracts</code> → Contract Addresses\n"
+        "<code>/follow</code>    → Socials & Links\n"
         "﹎﹎﹎﹎﹎﹎﹎\n\n"
         "<b>🌐 Official Website:</b> <a href='https://kendu.io'>https://kendu.io</a>\n"
         "<b>💬 Telegram:</b> <a href='https://t.me/Kendu'>https://t.me/Kendu</a>\n"
@@ -35,7 +41,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "✅ <i><a href='https://skynet.certik.com/projects/kendu-inu'>CertiK</a> audit completed</i>\n\n"
         "Made with ❤️ by the Kendu Community.",
         parse_mode="HTML",
-        reply_markup=reply_markup,
         disable_web_page_preview=True
     )
 
