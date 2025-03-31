@@ -1,70 +1,47 @@
 import os
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler
-from telegram import BotCommand, MenuButtonCommands
-from handlers.commands import start, menu, about, eco, buykendu, contracts, faq, follow
-from handlers.callbacks import handle_button
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
-# 🔐 Load your bot token and Railway-provided URL
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-RAILWAY_URL = os.getenv("RAILWAY_URL")  # Set this in Railway variables
+RAILWAY_URL = os.getenv("RAILWAY_URL")
+PORT = int(os.environ.get("PORT", "8080"))
 
-# 🔘 Register slash commands, menu, and webhook URL
-async def set_bot_commands(application):
-    commands = [
-        BotCommand("menu", "Open the main Kendu Menu"),
-        BotCommand("about", "Learn about Kendu"),
-        BotCommand("eco", "Explore the Ecosystem"),
-        BotCommand("buykendu", "How to Buy Kendu"),
-        BotCommand("contracts", "View Contract Addresses"),
-        BotCommand("faq", "Frequently Asked Questions"),
-        BotCommand("follow", "Official Links & Socials"),
-    ]
-    await application.bot.set_my_commands(commands)
-    await application.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("✅ /start triggered")
+    await update.message.reply_text("👋 Hello! This is your debug webhook bot.")
 
-    # ✅ Explicitly set the webhook
-    webhook_url = RAILWAY_URL + "/webhook"
-    await application.bot.set_webhook(url=webhook_url)
+async def log_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"📥 Raw update received: {update}")
 
-# 🚀 Main Entry Point
 def main():
-    print("🔧 bot.py: main() starting...")
-
-    if os.getenv("FORCE_EXIT") == "true":
-        print("🛑 FORCE_EXIT enabled. Shutting down immediately.")
-        exit(0)
-
     if not BOT_TOKEN or not RAILWAY_URL:
-        print("❌ BOT_TOKEN or RAILWAY_URL missing. Exiting.")
+        print("❌ Missing BOT_TOKEN or RAILWAY_URL")
         exit(1)
 
-    print("🔐 BOT_TOKEN & RAILWAY_URL loaded.")
+    full_webhook_url = f"https://{RAILWAY_URL.replace('https://', '').replace('http://', '')}/webhook"
+    print(f"🌐 Webhook set to: {full_webhook_url}")
 
     app = Application.builder().token(BOT_TOKEN).build()
-    print("✅ Application built.")
 
+    # Basic command and message handlers
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("menu", menu))
-    app.add_handler(CommandHandler("about", about))
-    app.add_handler(CommandHandler("eco", eco))
-    app.add_handler(CommandHandler("buykendu", buykendu))
-    app.add_handler(CommandHandler("contracts", contracts))
-    app.add_handler(CommandHandler("faq", faq))
-    app.add_handler(CommandHandler("follow", follow))
-    app.add_handler(CallbackQueryHandler(handle_button))
-    app.post_init = set_bot_commands
-    print("✅ Handlers registered.")
+    app.add_handler(MessageHandler(filters.ALL, log_all))
 
-    # 🟢 Start webhook server
-    print("🚀 Starting webhook server...")
+    async def setup(application):
+        await application.bot.set_webhook(url=full_webhook_url)
+        print("✅ Webhook registered with Telegram")
+
+    app.post_init = setup
+
+    print("🚀 Starting webhook listener...")
     app.run_webhook(
         listen="0.0.0.0",
-        port=int(os.environ.get("PORT", "8080")),
-        webhook_url=f"https://{RAILWAY_URL.replace('https://', '').replace('http://', '')}/webhook"
+        port=PORT,
+        webhook_url=full_webhook_url
     )
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(f"🔥 Error during bot startup: {e}")
+        print(f"🔥 Fatal error: {e}")
