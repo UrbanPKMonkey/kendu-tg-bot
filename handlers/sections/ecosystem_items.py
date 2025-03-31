@@ -1,11 +1,10 @@
 # handlers/sections/ecosystem_items.py
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from utils.message_tools import add_black_background_to_image
 
-async def send_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item: str):
-    items = {
+async def handle_ecosystem_item(context, chat_id, data):
+    ecosystem_map = {
         "kendu_energy": {
             "photo": "https://www.kendu.io/assets/images/kendu-energy-drink.webp",
             "caption": (
@@ -34,14 +33,13 @@ async def send_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TYPE
             "url": "https://kenducreator.com/"
         },
         "kendu_style": {
-            "photo": "https://www.kendu.io/assets/images/kendu-style-logo.png",
+            "photo": await add_black_background_to_image("https://www.kendu.io/assets/images/kendu-style-logo.png"),
             "caption": (
                 "🧢 <b>Kendu Style</b>\n\n"
                 "Rep the movement IRL. Kendu Style is bold, raw, and unmistakably you.\n"
                 "Caps, tees, fits — made for the builders, doers, and believers."
             ),
-            "url": "https://kendustyle.com/",
-            "apply_black_bg": True
+            "url": "https://kendustyle.com/"
         },
         "kendu_unstitched": {
             "photo": "https://www.kendu.io/assets/images/kendustiched.webp",
@@ -54,30 +52,31 @@ async def send_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TYPE
         }
     }
 
-    item_data = items.get(item)
-    if not item_data:
+    item = ecosystem_map.get(data)
+    if not item:
         return
 
-    if "apply_black_bg" in item_data and item_data["apply_black_bg"]:
-        photo = await add_black_background_to_image(item_data["photo"])
-    else:
-        photo = item_data["photo"]
-
-    caption = item_data["caption"]
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🌐 Visit Site", url=item_data["url"])],
+        [InlineKeyboardButton("🌐 Visit Site", url=item["url"])],
         [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
     ])
 
-    query = update.callback_query
-    await query.message.delete()
+    # Delete previous message
+    old_msg_id = context.user_data.get("menu_msg_id")
+    try:
+        if old_msg_id:
+            await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
+    except Exception:
+        pass
 
-    new_msg = await query.message.chat.send_photo(
-        photo=photo,
-        caption=caption,
+    # Send image post
+    sent = await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=item["photo"],
+        caption=item["caption"],
         parse_mode="HTML",
         reply_markup=reply_markup
     )
 
-    context.user_data["menu_msg_id"] = new_msg.message_id
+    context.user_data["menu_msg_id"] = sent.message_id
     context.user_data["menu_msg_type"] = "photo"
