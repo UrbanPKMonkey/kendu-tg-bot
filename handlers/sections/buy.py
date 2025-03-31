@@ -2,7 +2,7 @@
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from handlers.sections.menu import edit_menu_response
+from utils.message_tools import edit_menu_response
 
 async def handle_buy_kendu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, query=None, message_override=None):
     text = (

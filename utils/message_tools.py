@@ -22,14 +22,6 @@ async def smart_send_or_edit(
     """
     Edits or sends a new message depending on interaction context.
     Automatically deletes old message if necessary.
-
-    Parameters:
-        query (CallbackQuery): When triggered by a button.
-        context: Telegram context object.
-        new_text (str): Message content.
-        reply_markup (InlineKeyboardMarkup): Optional buttons.
-        parse_mode (str): HTML/Markdown.
-        message_override (Message): Used for slash commands.
     """
     if query:
         chat_id = query.message.chat_id
@@ -40,12 +32,8 @@ async def smart_send_or_edit(
     else:
         raise ValueError("No valid message or query provided to smart_send_or_edit.")
 
-    
-    
     old_msg_id = context.user_data.get("menu_msg_id")
     old_type = context.user_data.get("menu_msg_type", "text")
-
-    # Force new message for slash commands or media → text switch
     force_new = bool(message_override) or old_type != "text"
 
     if old_msg_id and not force_new:
@@ -64,14 +52,12 @@ async def smart_send_or_edit(
             except Exception:
                 pass
 
-    # Delete the /slash command message
     if message_override:
         try:
             await message_override.delete()
         except Exception:
             pass
 
-    # Send fresh text message
     sent = await context.bot.send_message(
         chat_id=chat_id,
         text=new_text,
@@ -82,22 +68,34 @@ async def smart_send_or_edit(
     context.user_data["menu_msg_type"] = "text"
 
 
+async def delete_and_send_new(update, context, text, reply_markup=None, parse_mode="HTML"):
+    """Deletes the previous message (if applicable) and sends a fresh new message."""
+    try:
+        if update.message:
+            await update.message.delete()
+        elif update.callback_query:
+            await update.callback_query.message.delete()
+    except Exception as e:
+        print(f"⚠️ Failed to delete message: {e}")
+
+    new_msg = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode=parse_mode
+    )
+    return new_msg
+
 
 async def add_black_background_to_image(image_url: str) -> BytesIO:
     """
     Adds a black background behind transparent PNGs for Telegram compatibility.
-
-    Parameters:
-        image_url (str): URL to the image.
-
-    Returns:
-        BytesIO: Image file ready to send.
     """
     response = requests.get(image_url)
     original = Image.open(BytesIO(response.content)).convert("RGBA")
 
     background = Image.new("RGB", original.size, (0, 0, 0))
-    background.paste(original, mask=original.split()[3])  # Apply alpha channel
+    background.paste(original, mask=original.split()[3])
 
     output = BytesIO()
     output.name = "with_black_bg.png"
@@ -109,9 +107,6 @@ async def add_black_background_to_image(image_url: str) -> BytesIO:
 def get_contracts_text_and_markup():
     """
     Returns contract text + back button markup.
-
-    Returns:
-        Tuple[str, InlineKeyboardMarkup]
     """
     text = (
         "🧾 <b>Contract Addresses</b>\n\n"
@@ -129,29 +124,9 @@ def get_contracts_text_and_markup():
 
     return text, reply_markup
 
-async def delete_and_send_new(update, context, text, reply_markup=None, parse_mode="HTML"):
-    """Deletes the previous message (if applicable) and sends a fresh new message."""
-    try:
-        # Slash commands: delete user-typed message
-        if update.message:
-            await update.message.delete()
-        # Callback buttons: delete the previous bot image or menu
-        elif update.callback_query:
-            await update.callback_query.message.delete()
-    except Exception as e:
-        print(f"⚠️ Failed to delete message: {e}")
 
-    # Now send the new message
-    new_msg = await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=text,
-        reply_markup=reply_markup,
-        parse_mode=parse_mode
-    )
-    return new_msg
-
-# ✅ Utility to edit a tracked menu message by ID
 async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
+    """Edits an existing tracked menu message by ID."""
     await context.bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
