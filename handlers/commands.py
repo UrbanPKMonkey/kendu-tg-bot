@@ -1,6 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.callbacks import handle_button
+from utils.message_tools import delete_and_send_new
 
 # ✅ Simulates a button tap from a slash command
 async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
@@ -15,7 +16,7 @@ async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, da
     except Exception as e:
         print(f"❌ simulate_button error for '{data}': {e}")
 
-# ✅ /start command
+# ✅ /start command shows welcome image
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
 
@@ -60,31 +61,38 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         print(f"❌ Error in /start: {e}")
 
-# ✅ Each slash command reuses callback logic with logs
+# ✅ Slash commands that DELETE before simulating buttons
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /menu command received")
+    await delete_and_send_new(update, context, "⏳ Loading Menu…")
     await simulate_button(update, context, "menu")
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /about command received")
+    await delete_and_send_new(update, context, "⏳ Loading About…")
     await simulate_button(update, context, "about")
 
 async def eco(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /eco command received")
+    await delete_and_send_new(update, context, "⏳ Loading Ecosystem…")
     await simulate_button(update, context, "ecosystem")
 
 async def buykendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /buykendu command received")
+    await delete_and_send_new(update, context, "⏳ Loading How to Buy…")
     await simulate_button(update, context, "buy_kendu")
 
 async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /contracts command received")
+    await delete_and_send_new(update, context, "⏳ Loading Contracts…")
     await simulate_button(update, context, "contract_addresses")
 
 async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /faq command received")
+    await delete_and_send_new(update, context, "⏳ Loading FAQ…")
     await simulate_button(update, context, "faq")
 
 async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /follow command received")
+    await delete_and_send_new(update, context, "⏳ Loading Socials…")
     await simulate_button(update, context, "follow_links")

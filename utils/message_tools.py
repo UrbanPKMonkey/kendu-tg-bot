@@ -128,3 +128,24 @@ def get_contracts_text_and_markup():
     ])
 
     return text, reply_markup
+
+async def delete_and_send_new(update, context, text, reply_markup=None, parse_mode="HTML"):
+    """Deletes the previous message (if applicable) and sends a fresh new message."""
+    try:
+        # Slash commands: delete user-typed message
+        if update.message:
+            await update.message.delete()
+        # Callback buttons: delete the previous bot image or menu
+        elif update.callback_query:
+            await update.callback_query.message.delete()
+    except Exception as e:
+        print(f"⚠️ Failed to delete message: {e}")
+
+    # Now send the new message
+    new_msg = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode=parse_mode
+    )
+    return new_msg
