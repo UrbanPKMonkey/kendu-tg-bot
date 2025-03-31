@@ -8,7 +8,7 @@ from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 # 🔐 Load environment variables
 load_dotenv()
-BOT_TOKEN: str = os.getenv('TELEGRAM_BOT_TOKEN')
+BOT_TOKEN: str = os.getenv('BOT_TOKEN')
 RAILWAY_URL: str = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 
 # ⚒️ Build the Telegram Application
