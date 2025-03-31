@@ -23,11 +23,10 @@ from handlers.sections.menu import handle_menu
 from handlers.sections.about import handle_about
 from handlers.sections.ecosystem import handle_ecosystem
 from handlers.sections.ecosystem_items import handle_ecosystem_item
-from handlers.sections.buy import handle_buy
-from handlers.sections.faq import handle_faq
-from handlers.sections.contracts import handle_contracts
-from handlers.sections.follow import handle_follow
-
+from handlers.sections.buy import handle_buy_kendu, handle_buy_chain
+from handlers.sections.faq import handle_faq_answer, handle_faq_menu
+from handlers.sections.contracts import handle_contract_addresses
+from handlers.sections.follow import handle_follow_links
 
 async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, data_override=None, message_override=None):
     query = update.callback_query if update else None
@@ -47,14 +46,18 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
         await handle_ecosystem(context, chat_id)
     elif data.startswith("kendu_"):
         await handle_ecosystem_item(context, chat_id, data)
+    elif data == "buy_kendu":
+        await handle_buy_kendu(update, context)
     elif data.startswith("buy_") or data.startswith("how_to_"):
-        await handle_buy(context, chat_id, data)
-    elif data.startswith("faq"):
-        await handle_faq(context, chat_id, data)
+        await handle_buy_chain(update, context, data)
+    elif data == "faq":
+        await handle_faq_menu(context, chat_id)
+    elif data.startswith("faq_"):
+        await handle_faq_answer(context, chat_id, data)
     elif data == "contract_addresses":
-        await handle_contracts(context, chat_id, message)
+        await handle_contract_addresses(context, chat_id, message)
     elif data == "follow_links":
-        await handle_follow(context, chat_id, message)
+        await handle_follow_links(context, chat_id, message)
     else:
         # Fallback
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
