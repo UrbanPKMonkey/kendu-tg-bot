@@ -178,6 +178,7 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
 
         # Track the new message ID so back works!
         context.user_data["menu_msg_id"] = new_msg.message_id
+        context.user_data["menu_msg_type"] = "photo"
 
 
     elif data == "kendu_coffee":
@@ -203,6 +204,7 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
 
         # Track the new message ID so back works!
         context.user_data["menu_msg_id"] = new_msg.message_id
+        context.user_data["menu_msg_type"] = "photo"
 
 
     elif data == "kendu_creator":
@@ -227,7 +229,8 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
         )
 
         # Track the new message ID so back works!
-        context.user_data["menu_msg_id"] = new_msg.message_id      
+        context.user_data["menu_msg_id"] = new_msg.message_id
+        context.user_data["menu_msg_type"] = "photo"    
 
 
 
@@ -254,6 +257,7 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
 
         # Track the new message ID so back works!
         context.user_data["menu_msg_id"] = new_msg.message_id
+        context.user_data["menu_msg_type"] = "photo"
 
 
 
@@ -280,6 +284,7 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
 
         # Track the new message ID so back works!
         context.user_data["menu_msg_id"] = new_msg.message_id
+        context.user_data["menu_msg_type"] = "photo"
 
   
 

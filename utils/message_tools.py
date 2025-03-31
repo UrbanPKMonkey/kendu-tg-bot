@@ -40,11 +40,16 @@ async def smart_send_or_edit(
     else:
         raise ValueError("No valid message or query provided to smart_send_or_edit.")
 
+    
+    
     old_msg_id = context.user_data.get("menu_msg_id")
+    old_type = context.user_data.get("menu_msg_type", "text")
 
-    if old_msg_id:
+    # Force new message for slash commands or media → text switch
+    force_new = bool(message_override) or old_type != "text"
+
+    if old_msg_id and not force_new:
         try:
-            # Try to edit existing message
             await context.bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=old_msg_id,
@@ -54,26 +59,27 @@ async def smart_send_or_edit(
             )
             return
         except Exception:
-            # Editing failed — try deleting old
             try:
                 await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
             except Exception:
-                pass  # Already deleted
+                pass
 
-    # Slash command path — delete the command msg first
+    # Delete the /slash command message
     if message_override:
         try:
             await message_override.delete()
         except Exception:
             pass
 
-        sent = await context.bot.send_message(
-            chat_id=chat_id,
-            text=new_text,
-            reply_markup=reply_markup,
-            parse_mode=parse_mode
-        )
-        context.user_data["menu_msg_id"] = sent.message_id
+    # Send fresh text message
+    sent = await context.bot.send_message(
+        chat_id=chat_id,
+        text=new_text,
+        reply_markup=reply_markup,
+        parse_mode=parse_mode
+    )
+    context.user_data["menu_msg_id"] = sent.message_id
+    context.user_data["menu_msg_type"] = "text"
 
 
 
