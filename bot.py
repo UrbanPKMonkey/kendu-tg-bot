@@ -60,7 +60,7 @@ def main():
     app.run_webhook(
         listen="0.0.0.0",
         port=int(os.environ.get("PORT", "8080")),
-        webhook_url=f"{RAILWAY_URL}/webhook"
+        webhook_url=f"https://{RAILWAY_URL.replace('https://', '').replace('http://', '')}/webhook"
     )
 
 if __name__ == "__main__":
