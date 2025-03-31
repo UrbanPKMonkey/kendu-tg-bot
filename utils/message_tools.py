@@ -149,3 +149,13 @@ async def delete_and_send_new(update, context, text, reply_markup=None, parse_mo
         parse_mode=parse_mode
     )
     return new_msg
+
+# ✅ Utility to edit a tracked menu message by ID
+async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
+    await context.bot.edit_message_text(
+        chat_id=chat_id,
+        message_id=message_id,
+        text=text,
+        parse_mode="HTML",
+        reply_markup=reply_markup
+    )
