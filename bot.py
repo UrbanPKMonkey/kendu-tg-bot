@@ -4,6 +4,10 @@ from handlers.commands import start, menu, about, eco, buykendu, contracts, faq,
 from handlers.callbacks import handle_button
 import os
 
+
+
+
+
 # 🔐 Load your bot token from env
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
@@ -26,6 +30,15 @@ async def set_bot_commands(application):
 
 # 🚀 Main Entry Point
 def main():
+
+    
+    if os.getenv("FORCE_EXIT") == "true":
+        print("FORCE_EXIT enabled. Shutting down immediately.")
+        exit(0)
+
+
+
+
     app = Application.builder().token(BOT_TOKEN).build()
 
     # ✅ Register command handlers
