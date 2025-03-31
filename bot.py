@@ -4,10 +4,11 @@ from telegram import BotCommand, MenuButtonCommands
 from handlers.commands import start, menu, about, eco, buykendu, contracts, faq, follow
 from handlers.callbacks import handle_button
 
-# 🔐 Load your bot token from env
+# 🔐 Load your bot token and Railway-provided URL
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+RAILWAY_URL = os.getenv("RAILWAY_URL")  # Set this in Railway variables
 
-# 🔘 Register slash commands & blue menu button
+# 🔘 Register slash commands, menu, and webhook URL
 async def set_bot_commands(application):
     commands = [
         BotCommand("menu", "Open the main Kendu Menu"),
@@ -18,31 +19,30 @@ async def set_bot_commands(application):
         BotCommand("faq", "Frequently Asked Questions"),
         BotCommand("follow", "Official Links & Socials"),
     ]
-
     await application.bot.set_my_commands(commands)
     await application.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+
+    # ✅ Explicitly set the webhook
+    webhook_url = RAILWAY_URL + "/webhook"
+    await application.bot.set_webhook(url=webhook_url)
 
 # 🚀 Main Entry Point
 def main():
     print("🔧 bot.py: main() starting...")
 
-    # ✅ Check for FORCE_EXIT (for safe Railway shutdowns)
     if os.getenv("FORCE_EXIT") == "true":
         print("🛑 FORCE_EXIT enabled. Shutting down immediately.")
         exit(0)
 
-    # ✅ Confirm BOT_TOKEN loaded
-    if not BOT_TOKEN:
-        print("❌ BOT_TOKEN not found in environment! Exiting.")
+    if not BOT_TOKEN or not RAILWAY_URL:
+        print("❌ BOT_TOKEN or RAILWAY_URL missing. Exiting.")
         exit(1)
-    else:
-        print("🔐 BOT_TOKEN found.")
 
-    # ✅ Build the Telegram application
+    print("🔐 BOT_TOKEN & RAILWAY_URL loaded.")
+
     app = Application.builder().token(BOT_TOKEN).build()
     print("✅ Application built.")
 
-    # ✅ Register slash command handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", menu))
     app.add_handler(CommandHandler("about", about))
@@ -51,20 +51,18 @@ def main():
     app.add_handler(CommandHandler("contracts", contracts))
     app.add_handler(CommandHandler("faq", faq))
     app.add_handler(CommandHandler("follow", follow))
-    print("✅ Command handlers registered.")
-
-    # ✅ Register callback query handler for buttons
     app.add_handler(CallbackQueryHandler(handle_button))
-    print("✅ Callback handlers registered.")
-
-    # ✅ Set bot commands and menu button
     app.post_init = set_bot_commands
+    print("✅ Handlers registered.")
 
-    # 🟢 Start polling
-    print("🚀 Starting polling...")
-    app.run_polling()
+    # 🟢 Start webhook server
+    print("🚀 Starting webhook server...")
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", "8080")),
+        webhook_url=f"{RAILWAY_URL}/webhook"
+    )
 
-# 🧯 Crash Protection
 if __name__ == "__main__":
     try:
         main()
