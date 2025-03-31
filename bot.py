@@ -4,7 +4,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, ContextTyp
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 RAILWAY_URL = os.getenv("RAILWAY_URL")
-PORT = int(os.environ.get("PORT", "8080"))
+PORT = int(os.environ.get("PORT", "80"))
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start triggered")
