@@ -1,3 +1,13 @@
+from telegram import Update, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
+from utils.message_tools import (
+    send_tracked_menu_text,
+    send_tracked_menu_photo,
+    send_tracked_menu_video,
+    send_tracked_menu_document,
+)
+
+
 async def menu_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
