@@ -78,9 +78,6 @@ async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE): await _rou
 async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd_key: str):
     print(f"📩 /{cmd_key} command received")
 
-    if await menu_handler(update, context, msg_type="text"):
-        return
-
     callback_data = ROUTES.get(cmd_key)
     if callback_data:
         await handle_button(update, context, data_override=callback_data)
