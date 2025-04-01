@@ -12,6 +12,9 @@ from handlers.sections.follow import handle_follow_links
 # 🚀 Shared command actions
 from handlers.menu_actions import handle_start, logout, ask_restart_confirmation
 
+# 🛠️ Dev/Admin tools
+from handlers.admin import refresh_commands
+
 
 # 🌐 Centralized list for both slash registration + blue Telegram menu
 COMMAND_DEFINITIONS = [
@@ -25,6 +28,7 @@ COMMAND_DEFINITIONS = [
     ("follow", "Official Links & Socials"),
     ("logout", "Clear menu state and reset"),
     ("restart", "Full reset and start fresh"),
+    # Optional: ("refreshcommands", "Force update Telegram command list") ← leave out of blue menu for now
 ]
 
 
@@ -45,3 +49,6 @@ def register_slash_commands(bot_app):
 
     for cmd, handler in command_handlers.items():
         bot_app.add_handler(CommandHandler(cmd, wrap_command_handler(handler)))
+
+    # 🔧 Dev command (no wrapper for now)
+    bot_app.add_handler(CommandHandler("refreshcommands", refresh_commands))
