@@ -6,11 +6,29 @@ from telegram.ext import ContextTypes
 async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, chat_id=None, message: Message = None):
     # Determine source
     query = update.callback_query if update else None
-    message = query.message if query else message
+    message = query.message if query else message or update.message
     chat_id = message.chat_id if message else chat_id
 
     if query:
         await query.answer()
+
+    # Prevent duplicate /menu messages
+    old_msg_id = context.user_data.get("menu_msg_id")
+    old_msg_type = context.user_data.get("menu_msg_type", "text")
+    
+    # Try deleting previous menu message (unless it's a photo)
+    if old_msg_id and old_msg_type == "text":
+        try:
+            await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
+        except Exception:
+            pass
+
+    # Delete slash command message to prevent clutter
+    if update.message:
+        try:
+            await update.message.delete()
+        except Exception:
+            pass
 
     text = (
         "🤖 <b>Kendu Main Menu</b>\n\n"
@@ -25,13 +43,6 @@ async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE 
         [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
         [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
     ])
-
-    # Try deleting previous menu message (if not a photo)
-    try:
-        if message and not message.photo:
-            await message.delete()
-    except Exception:
-        pass
 
     sent = await context.bot.send_message(
         chat_id=chat_id,
