@@ -22,6 +22,8 @@ ROUTES = {
 # ===== /start handler (welcome image and context reset) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
+    
+    # Reset the user's menu state and prevent deletion of /start message
     await _reset_user_state(update, context)
 
     caption = (
@@ -68,7 +70,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Save the /start message ID to ensure it is not deleted unless explicitly reset
     context.user_data["menu_start_msg_id"] = sent.message_id
-    
+
 
 # ===== Unified Slash Command Routing =====
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "menu")

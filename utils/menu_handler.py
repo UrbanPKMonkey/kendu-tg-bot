@@ -1,12 +1,3 @@
-from telegram import Update, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
-from utils.message_tools import (
-    send_tracked_menu_text,
-    send_tracked_menu_photo,
-    send_tracked_menu_video,
-    send_tracked_menu_document,
-)
-
 async def menu_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -30,7 +21,7 @@ async def menu_handler(
         print("⚠️ No chat_id found. Skipping menu handling.")
         return True
 
-    # Track the last /start message
+    # Get stored /start message ID
     last_start_msg_id = context.user_data.get("menu_start_msg_id")
 
     # Skip deletion if it's the start message (stored in context)
