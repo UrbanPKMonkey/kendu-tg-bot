@@ -1,5 +1,3 @@
-# utils/menu_handler.py
-
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.message_tools import (
@@ -17,7 +15,8 @@ async def menu_handler(
     reply_markup: InlineKeyboardMarkup = None,
     photo=None,
     video=None,
-    document=None
+    document=None,
+    menu_key: str = None
 ):
     """
     Smart menu rendering + cleanup for text, photo, video, and document.
@@ -26,6 +25,10 @@ async def menu_handler(
 
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
+
+    if not chat_id:
+        print("⚠️ No valid chat ID found — skipping menu handler")
+        return True
 
     # 🧹 Delete /slash command message
     if update.message:
@@ -36,12 +39,21 @@ async def menu_handler(
 
     old_msg_id = context.user_data.get("menu_msg_id")
     old_type = context.user_data.get("menu_msg_type", "text")
+    old_key = context.user_data.get("menu_msg_key")
 
-    # ✅ Already showing the same type
-    if old_msg_id and old_type == msg_type:
-        return True
+    # 🧠 Track this new one
+    current_key = menu_key or text or "unknown"
+    context.user_data["menu_msg_key"] = current_key
 
-    # ❌ Switching types — delete old
+    # ✅ Already showing same menu (type + key) — try confirming it still exists
+    if old_msg_id and old_type == msg_type and old_key == current_key:
+        try:
+            await context.bot.edit_message_reply_markup(chat_id=chat_id, message_id=old_msg_id, reply_markup=reply_markup)
+            return True
+        except Exception:
+            print("⚠️ Old menu message not editable — sending new one")
+
+    # ❌ Switching types — delete old message
     if old_msg_id and old_type != msg_type:
         try:
             await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
@@ -57,5 +69,8 @@ async def menu_handler(
         await send_tracked_menu_video(context, chat_id, video, text, reply_markup)
     elif msg_type == "document" and text and document:
         await send_tracked_menu_document(context, chat_id, document, text, reply_markup)
+
+    # Update type tracker
+    context.user_data["menu_msg_type"] = msg_type
 
     return False

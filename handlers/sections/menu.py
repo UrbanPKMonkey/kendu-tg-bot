@@ -1,5 +1,3 @@
-# handlers/sections/menu.py
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
@@ -19,5 +17,11 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
     ])
 
-    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)
-
+    await menu_handler(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=text,
+        reply_markup=reply_markup,
+        menu_key="menu"
+    )

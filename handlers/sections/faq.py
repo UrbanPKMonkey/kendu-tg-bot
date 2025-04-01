@@ -1,5 +1,3 @@
-# handlers/sections/faq.py
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
@@ -22,7 +20,14 @@ async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)
+    await menu_handler(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=text,
+        reply_markup=reply_markup,
+        menu_key="faq_menu"
+    )
 
 
 async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
@@ -76,4 +81,11 @@ async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         [InlineKeyboardButton("🔙 Back", callback_data="faq")]
     ])
 
-    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)
+    await menu_handler(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=text,
+        reply_markup=reply_markup,
+        menu_key=data  # Tracks individual FAQ questions
+    )

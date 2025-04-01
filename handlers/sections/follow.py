@@ -23,4 +23,12 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)
+    await menu_handler(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=text,
+        reply_markup=reply_markup,
+        menu_key="follow"
+    )
+

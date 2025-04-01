@@ -13,6 +13,10 @@ async def handle_contract_addresses(update: Update, context: ContextTypes.DEFAUL
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        menu_key="contracts"
     )
+
+
+
 
