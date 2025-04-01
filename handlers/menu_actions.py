@@ -6,11 +6,7 @@ from core.message_tracker import track_bot_message
 from core.menu_state import delete_all_bot_messages, reset_menu_context
 from ui.menu_renderer import menu_renderer
 
-# 🧭 Adjust path depending on where start.py is:
 from handlers.sections.start import send_start_welcome_screen
-# OR if you didn’t move it:
-# from handlers.start import send_start_welcome_screen
-
 from handlers.sections.menu import handle_menu
 
 
@@ -18,7 +14,7 @@ from handlers.sections.menu import handle_menu
 async def start_wipe_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("🧼 Start wipe confirmed")
     await delete_all_bot_messages(update, context)
-    await reset_menu_context(context)
+    reset_menu_context(context)
     await _reset_user_state(update, context, reset_start=True)
     await send_start_welcome_screen(update, context)
 
@@ -43,7 +39,7 @@ async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"⚠️ Failed to delete restart messages: {e}")
 
     await delete_all_bot_messages(update, context)
-    await reset_menu_context(context)
+    reset_menu_context(context)
     await _reset_user_state(update, context, reset_start=True)
 
     sent = await context.bot.send_message(
@@ -65,7 +61,7 @@ async def restart_cancelled(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("🔓 Logout command triggered")
 
-    await reset_menu_context(context)
+    reset_menu_context(context)
 
     sent = await context.bot.send_message(
         chat_id=update.effective_chat.id,
