@@ -26,6 +26,28 @@ async def start_continue(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_start_welcome_screen(update, context)
 
 
+# === 🔁 /restart: Ask for Confirmation ===
+async def ask_restart_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Shows restart confirmation with Cancel + Confirm buttons."""
+
+    text = (
+        "⚠️ <b>Are you sure you want to fully restart?</b>\n\n"
+        "This will wipe all menus, reset your session, and return to the welcome screen."
+    )
+
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🧼 Restart & Wipe Everything", callback_data="restart_confirmed")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="restart_cancelled")]
+    ])
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+
+
 # === 🔁 /restart: Confirmed Reset ===
 async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ Restart confirmed")
@@ -100,3 +122,28 @@ async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYP
         reply_markup=reply_markup,
         section_key="commands"
     )
+
+
+# === 🚀 /start entry point ===
+async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Initial /start command — show wipe or continue only if messages exist."""
+    user_data = context.user_data
+    menu_msg_ids = user_data.get("menu_msg_ids", [])
+    has_existing = len(menu_msg_ids) > 0
+
+    if has_existing:
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🧼 Start Fresh (Wipe Chat History)", callback_data="start_wipe_confirmed")],
+            [InlineKeyboardButton("📲 Continue Without Deleting", callback_data="start_continue")]
+        ])
+
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="👋 Welcome back!
+
+Would you like to start fresh or continue?",
+            reply_markup=reply_markup,
+            parse_mode="HTML"
+        )
+    else:
+        await start_continue(update, context)
