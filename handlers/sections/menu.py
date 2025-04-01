@@ -15,7 +15,7 @@ async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE 
         await query.answer()
 
     # Use shared menu_handler to avoid duplicates or re-sending
-    if await menu_handler(context, chat_id, message, msg_type="text"):
+    if await menu_handler(context, chat_id, message, current_type="text"):
         return
 
     # Send fresh text menu
