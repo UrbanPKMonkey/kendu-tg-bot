@@ -19,7 +19,7 @@ ROUTES = {
     "follow": "follow_links",
 }
 
-# ===== /start command (welcome image and context reset) =====
+# ===== /start handler (welcome image and context reset) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
     await _reset_user_state(update, context)
@@ -52,10 +52,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Made with ❤️ by the Kendu Community."
     )
 
-    reply_markup = InlineKeyboardMarkup([[
-        InlineKeyboardButton("🤖 Menu", callback_data="menu")
-    ]])
+    reply_markup = InlineKeyboardMarkup([ 
+        [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
+    ])
 
+    # Send /start message and save message ID to context
     sent = await menu_handler(
         update=update,
         context=context,
@@ -65,12 +66,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-    # Only store the message_id if a new message was sent
-    if not sent:  # menu_handler returned True, meaning no new message was sent
-        print("⚠️ No new message sent, skipping message_id storage.")
-    else:
-        context.user_data["menu_start_msg_id"] = sent.message_id
-        print(f"📌 Menu tracked → id={sent.message_id}, type=photo")
+    # Save the /start message ID to ensure it is not deleted unless explicitly reset
+    context.user_data["menu_start_msg_id"] = sent.message_id
+    
 
 # ===== Unified Slash Command Routing =====
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "menu")

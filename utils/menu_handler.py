@@ -30,10 +30,10 @@ async def menu_handler(
         print("⚠️ No chat_id found. Skipping menu handling.")
         return True
 
-    # Skip deletion if it's the start message (stored in context)
+    # Track the last /start message
     last_start_msg_id = context.user_data.get("menu_start_msg_id")
 
-    # Delete original slash command message unless it's the start message
+    # Skip deletion if it's the start message (stored in context)
     if update.message and (last_start_msg_id != update.message.message_id):
         try:
             await update.message.delete()
