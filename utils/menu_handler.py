@@ -1,37 +1,59 @@
 # utils/menu_handler.py
 
-from telegram import Update, Message
+from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, msg_type="text") -> bool:
+async def menu_handler(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    msg_type: str = "text",
+    text: str = None,
+    reply_markup: InlineKeyboardMarkup = None
+):
     """
-    Checks if a menu-type message already exists and handles cleanup for slash/callback.
-    Returns True if no new message should be sent.
+    Handles all smart logic for menu/message management:
+    - Deletes slash command
+    - Avoids duplicates
+    - Deletes previous media/text if needed
+    - Sends and tracks new message
+    Returns: True if message already shown (no action), False if new one was sent.
     """
 
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
 
-    # Clean up slash command message (e.g., /menu)
+    # Delete slash command message
     if update.message:
         try:
             await update.message.delete()
         except Exception as e:
             print(f"⚠️ Failed to delete slash command message: {e}")
 
-    # Clean up previous menu if type changed (e.g., image → text)
     old_msg_id = context.user_data.get("menu_msg_id")
     old_type = context.user_data.get("menu_msg_type", "text")
 
-    # ✅ Avoid re-sending the same menu if it's already shown
+    # ✅ Already showing this message type — do nothing
     if old_msg_id and old_type == msg_type:
-        return True  # Already showing, do nothing
+        return True
 
-    # ❌ Delete old message if media → text switch
+    # ❌ Different type (media ↔ text) — delete old
     if old_msg_id and old_type != msg_type:
         try:
             await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
         except Exception as e:
             print(f"⚠️ Failed to delete previous menu: {e}")
 
-    return False  # Proceed to send new menu
+    # 🧠 Send and track new menu text
+    if msg_type == "text" and text:
+        sent = await context.bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode="HTML"
+        )
+        context.user_data.update({
+            "menu_msg_id": sent.message_id,
+            "menu_msg_type": "text"
+        })
+
+    return False
