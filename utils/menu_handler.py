@@ -1,39 +1,37 @@
 # utils/menu_handler.py
 
+from telegram import Update, Message
 from telegram.ext import ContextTypes
 
-async def menu_handler(
-    context: ContextTypes.DEFAULT_TYPE,
-    chat_id: int,
-    current_message,
-    current_type: str = "text"
-) -> bool:
+async def menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, msg_type="text") -> bool:
     """
-    Prevents duplicate menu messages and handles transitions (e.g., image → text).
-
-    Args:
-        context: Telegram context object with user_data.
-        chat_id: ID of the chat where the menu is being shown.
-        current_message: The incoming message or callback message.
-        current_type: Type of the message we want to show ("text" or "photo").
-
-    Returns:
-        True if the current menu is already showing (skip sending).
-        False if a new menu should be sent (continue flow).
+    Checks if a menu-type message already exists and handles cleanup for slash/callback.
+    Returns True if no new message should be sent.
     """
+
+    message = update.message or (update.callback_query and update.callback_query.message)
+    chat_id = message.chat_id if message else None
+
+    # Clean up slash command message (e.g., /menu)
+    if update.message:
+        try:
+            await update.message.delete()
+        except Exception as e:
+            print(f"⚠️ Failed to delete slash command message: {e}")
+
+    # Clean up previous menu if type changed (e.g., image → text)
     old_msg_id = context.user_data.get("menu_msg_id")
     old_type = context.user_data.get("menu_msg_type", "text")
-    current_msg_id = current_message.message_id if current_message else None
 
-    # ✅ If same message ID and type — skip
-    if old_msg_id and current_msg_id == old_msg_id and old_type == current_type:
-        return True
+    # ✅ Avoid re-sending the same menu if it's already shown
+    if old_msg_id and old_type == msg_type:
+        return True  # Already showing, do nothing
 
-    # 🔁 If type has changed — delete old message
-    if old_msg_id and old_type != current_type:
+    # ❌ Delete old message if media → text switch
+    if old_msg_id and old_type != msg_type:
         try:
             await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
         except Exception as e:
-            print(f"⚠️ Failed to delete old menu message: {e}")
+            print(f"⚠️ Failed to delete previous menu: {e}")
 
-    return False
+    return False  # Proceed to send new menu
