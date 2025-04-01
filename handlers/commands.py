@@ -24,7 +24,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
 
     # Reset all previous menu state (but keep /start image alive)
-    await _reset_user_state(update, context)
+    await _reset_user_state(update, context, reset_start=True)
 
     caption = (
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
@@ -58,7 +58,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
     ])
 
-    # Send welcome photo using menu handler
+    # Send new welcome image
     sent = await menu_handler(
         update=update,
         context=context,
@@ -68,8 +68,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-    # Track the /start message to protect it from deletion
-    # ✅ Only store if it's a real message (not just True)
+    # Track the new start message
     if hasattr(sent, "message_id"):
         context.user_data["menu_start_msg_id"] = sent.message_id
 
@@ -95,7 +94,7 @@ async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd
 # ===== Logout & Restart Commands =====
 async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("👋 /logout received")
-    await _reset_user_state(update, context, reset_start=False)
+    await _reset_user_state(update, context, reset_start=True)  # 👈 force full reset
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="✅ You’ve been logged out. Start again with /start or /menu.",
