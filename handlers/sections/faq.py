@@ -4,7 +4,6 @@ from telegram.ext import ContextTypes
 from core.menu_state import should_skip_section_render
 from ui.menu_renderer import menu_renderer
 
-
 # ===== 🤔 FAQ Menu =====
 async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if await should_skip_section_render(update, context, section_type="text", section_key="faq"):
@@ -33,13 +32,12 @@ async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        section_key="faq"
     )
-
 
 # ===== 📖 Answer Specific FAQ =====
 async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
-    """Routes to individual FAQ answers based on callback `data`."""
     print(f"📖 Showing FAQ answer for: {data}")
 
     faq_data = {
@@ -99,5 +97,5 @@ async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         msg_type="text",
         text=text,
         reply_markup=reply_markup,
-        section_key="faq"
+        section_key=data
     )

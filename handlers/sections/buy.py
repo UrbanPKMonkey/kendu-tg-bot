@@ -99,9 +99,17 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
         "⚠️ Always verify the contract before trading."
     )
 
+    # At the end of handle_buy_chain(...)
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🛒 Trade Now", url=data["link"])],
         [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
     ])
 
-    await menu_renderer(update, context, msg_type="text", text=text, reply_markup=reply_markup)
+    await menu_renderer(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=text,
+        reply_markup=reply_markup,
+        section_key=chain  # ✅ "buy_eth", "buy_sol", etc.
+    )
