@@ -53,6 +53,5 @@ async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TY
         msg_type="photo",
         text=caption,
         reply_markup=reply_markup,
-        photo=item_data["photo"],
-        menu_key=item
+        photo=item_data["photo"]
     )

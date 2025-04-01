@@ -28,7 +28,6 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup,
-        menu_key="follow"
+        reply_markup=reply_markup
     )
 

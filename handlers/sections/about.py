@@ -51,6 +51,5 @@ async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup,
-        menu_key="about"
+        reply_markup=reply_markup
     )

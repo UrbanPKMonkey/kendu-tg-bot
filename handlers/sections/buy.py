@@ -32,8 +32,7 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup,
-        menu_key="buy_kendu"
+        reply_markup=reply_markup
     )
 
 
@@ -98,6 +97,5 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup,
-        menu_key=chain
+        reply_markup=reply_markup
     )
