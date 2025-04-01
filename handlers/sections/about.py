@@ -1,11 +1,14 @@
 # handlers/sections/about.py
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.message_tools import smart_send_or_edit
+from utils.menu_handler import menu_handler
 
-async def handle_about(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, query=None, message_override=None):
-    """Displays the About Kendu section."""
+async def handle_about(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message):
+    # Check if we should skip rendering
+    if await menu_handler(context, chat_id, message, current_type="text"):
+        return
+
     text = (
         "🧠 <b>About Kendu</b>\n\n"
         "Kendu is a movement that empowers you to turn your life goals into reality.\n"
@@ -45,12 +48,16 @@ async def handle_about(update: Update = None, context: ContextTypes.DEFAULT_TYPE
         "🪖 <b>We don’t gamble. We work!</b>"
     )
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="menu")]])
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Back", callback_data="menu")]
+    ])
 
-    await smart_send_or_edit(
-        query=query,
-        context=context,
-        new_text=text,
+    sent = await context.bot.send_message(
+        chat_id=chat_id,
+        text=text,
         reply_markup=reply_markup,
-        message_override=message_override
+        parse_mode="HTML"
     )
+
+    context.user_data["menu_msg_id"] = sent.message_id
+    context.user_data["menu_msg_type"] = "text"

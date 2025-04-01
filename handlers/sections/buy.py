@@ -2,15 +2,24 @@
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from utils.menu_handler import menu_handler
 from utils.message_tools import edit_menu_response
 
-async def handle_buy_kendu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, query=None, message_override=None):
+async def handle_buy_kendu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None):
+    chat_id = update.effective_chat.id
+
+    # Prevent duplicate if already on the Buy screen
+    if await menu_handler(context, chat_id, update, current_type="text"):
+        return
+
     text = (
         "💰 <b>Buy $KENDU</b>\n\n"
         "Kendu is available on <b>Ethereum</b>, <b>Solana</b>, and <b>Base</b>.\n"
         "Kendu is accessible to all. 🌍\n\n"
+
         "We primarily identify as an <b>Ethereum token</b>, but support access across major ecosystems.\n"
         "Liquidity pools are available on each chain for accessibility and growth.\n\n"
+
         "⚫ <b>Ethereum (ETH)</b>\n"
         "<code>0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18</code>\n\n"
         "🟣 <b>Solana (SOL)</b>\n"
@@ -30,10 +39,13 @@ async def handle_buy_kendu(update: Update = None, context: ContextTypes.DEFAULT_
 
     msg_id = context.user_data.get("menu_msg_id")
     if msg_id:
-        await edit_menu_response(context, update.effective_chat.id, msg_id, text, reply_markup)
+        await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+    context.user_data["menu_msg_type"] = "text"
 
 
 async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, chain: str):
+    chat_id = update.effective_chat.id
+
     chains = {
         "buy_eth": {
             "title": "⚫ <b>Buy on Ethereum (ETH)</b>",
@@ -75,6 +87,10 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
     if not data:
         return
 
+    # Prevent duplicate loads
+    if await menu_handler(context, chat_id, update, current_type="text"):
+        return
+
     text = (
         f"{data['title']}\n\n"
         "<b>Why buy here?</b>\n" +
@@ -91,4 +107,5 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
 
     msg_id = context.user_data.get("menu_msg_id")
     if msg_id:
-        await edit_menu_response(context, update.effective_chat.id, msg_id, text, reply_markup)
+        await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+    context.user_data["menu_msg_type"] = "text"

@@ -1,67 +1,53 @@
 # handlers/sections/ecosystem_items.py
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
 from utils.message_tools import add_black_background_to_image
+from utils.menu_handler import menu_handler
 
-async def handle_ecosystem_item(context, chat_id, data):
+async def handle_ecosystem_item(context: ContextTypes.DEFAULT_TYPE, chat_id: int, item: str):
     ecosystem_map = {
         "kendu_energy": {
+            "title": "⚡ <b>Kendu Energy Drink</b>",
+            "desc": "Fuel your grind with Kendu Energy — the first community-powered energy drink built for creators, coders, traders, and builders.\nAll flavor. No compromise. One sip to become a chad.",
             "photo": "https://www.kendu.io/assets/images/kendu-energy-drink.webp",
-            "caption": (
-                "⚡ <b>Kendu Energy Drink</b>\n\n"
-                "Fuel your grind with Kendu Energy — the first community-powered energy drink built for creators, coders, traders, and builders.\n"
-                "All flavor. No compromise. One sip to become a chad."
-            ),
             "url": "https://kenduenergy.com/products/energy-drinks-usa-can-aus"
         },
         "kendu_coffee": {
+            "title": "☕ <b>Kendu Coffee</b>",
+            "desc": "Bold, organic, and unstoppable — Kendu Coffee fuels builders the way nature intended.\nWake up with purpose and taste the difference of decentralized hustle.",
             "photo": "https://www.kendu.io/assets/images/kendu-coffee.webp",
-            "caption": (
-                "☕ <b>Kendu Coffee</b>\n\n"
-                "Bold, organic, and unstoppable — Kendu Coffee fuels builders the way nature intended.\n"
-                "Wake up with purpose and taste the difference of decentralized hustle."
-            ),
             "url": "https://kenducoffee.com/"
         },
         "kendu_creator": {
+            "title": "🎨 <b>Kendu Creator</b>",
+            "desc": "A space for artists, devs, designers, and thinkers to create, collab, and build for the culture.\nShowcase your talent, contribute your skills, and be part of something legendary.",
             "photo": "https://www.kendu.io/assets/images/kenducreator.png",
-            "caption": (
-                "🎨 <b>Kendu Creator</b>\n\n"
-                "A space for artists, devs, designers, and thinkers to create, collab, and build for the culture.\n"
-                "Showcase your talent, contribute your skills, and be part of something legendary."
-            ),
             "url": "https://kenducreator.com/"
         },
         "kendu_style": {
+            "title": "🧢 <b>Kendu Style</b>",
+            "desc": "Rep the movement IRL. Kendu Style is bold, raw, and unmistakably you.\nCaps, tees, fits — made for the builders, doers, and believers.",
             "photo": await add_black_background_to_image("https://www.kendu.io/assets/images/kendu-style-logo.png"),
-            "caption": (
-                "🧢 <b>Kendu Style</b>\n\n"
-                "Rep the movement IRL. Kendu Style is bold, raw, and unmistakably you.\n"
-                "Caps, tees, fits — made for the builders, doers, and believers."
-            ),
             "url": "https://kendustyle.com/"
         },
         "kendu_unstitched": {
+            "title": "🧵 <b>Kendu Unstitched</b>",
+            "desc": "Where crypto meets culture. A raw fashion expression of the Kendu spirit.\nUnbranded. Unfiltered. Unstoppable.",
             "photo": "https://www.kendu.io/assets/images/kendustiched.webp",
-            "caption": (
-                "🧵 <b>Kendu Unstitched</b>\n\n"
-                "Where crypto meets culture. A raw fashion expression of the Kendu spirit.\n"
-                "Unbranded. Unfiltered. Unstoppable."
-            ),
             "url": "https://kendu-unstitched.square.site/"
         }
     }
 
-    item = ecosystem_map.get(data)
-    if not item:
+    item_data = ecosystem_map.get(item)
+    if not item_data:
         return
 
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🌐 Visit Site", url=item["url"])],
-        [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
-    ])
+    # Prevent duplicate loads
+    if await menu_handler(context, chat_id, None, current_type="photo"):
+        return
 
-    # Delete previous message
+    # Delete old tracked message if not already deleted
     old_msg_id = context.user_data.get("menu_msg_id")
     try:
         if old_msg_id:
@@ -69,11 +55,17 @@ async def handle_ecosystem_item(context, chat_id, data):
     except Exception:
         pass
 
-    # Send image post
+    # Build photo content
+    caption = f"{item_data['title']}\n\n{item_data['desc']}"
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🌐 Visit Site", url=item_data['url'])],
+        [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+    ])
+
     sent = await context.bot.send_photo(
         chat_id=chat_id,
-        photo=item["photo"],
-        caption=item["caption"],
+        photo=item_data["photo"],
+        caption=caption,
         parse_mode="HTML",
         reply_markup=reply_markup
     )

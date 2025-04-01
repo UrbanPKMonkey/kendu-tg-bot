@@ -1,10 +1,14 @@
 # handlers/sections/ecosystem.py
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from utils.menu_handler import menu_handler
 
-async def handle_ecosystem(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, query=None, message_override=None):
-    """Displays the Kendu Ecosystem section."""
+async def handle_ecosystem(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message):
+    # Skip if already showing the same text menu
+    if await menu_handler(context, chat_id, message, current_type="text"):
+        return
+
     text = (
         "🌐 <b>Kendu Ecosystem</b>\n\n"
         "Kendu is more than a token —\n"
@@ -27,17 +31,6 @@ async def handle_ecosystem(update: Update = None, context: ContextTypes.DEFAULT_
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    chat_id = (query.message.chat_id if query else message_override.chat_id)
-
-    # Always delete previous tracked menu message if it exists
-    old_msg_id = context.user_data.get("menu_msg_id")
-    try:
-        if old_msg_id:
-            await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
-    except Exception:
-        pass
-
-    # Send fresh message
     sent = await context.bot.send_message(
         chat_id=chat_id,
         text=text,
@@ -45,6 +38,5 @@ async def handle_ecosystem(update: Update = None, context: ContextTypes.DEFAULT_
         parse_mode="HTML"
     )
 
-    # Track new menu message
     context.user_data["menu_msg_id"] = sent.message_id
     context.user_data["menu_msg_type"] = "text"

@@ -2,10 +2,14 @@
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from utils.menu_handler import menu_handler
 from utils.message_tools import edit_menu_response
 
+async def handle_faq_menu(context: ContextTypes.DEFAULT_TYPE, chat_id: int, update: Update = None):
+    # Prevent duplicate load
+    if await menu_handler(context, chat_id, update, current_type="text"):
+        return
 
-async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "❓ <b>Frequently Asked Questions</b>\n\n"
         "Choose a question below to view the answer:"
@@ -24,69 +28,60 @@ async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg_id = context.user_data.get("menu_msg_id")
     if msg_id:
-        await edit_menu_response(context, update.effective_chat.id, msg_id, text, reply_markup)
+        await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+    context.user_data["menu_msg_type"] = "text"
 
 
-async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, question_id: str):
-    answers = {
+async def handle_faq_answer(context: ContextTypes.DEFAULT_TYPE, chat_id: int, data: str):
+    faq_data = {
         "faq_what_is_kendu": (
             "🔸 <b>What is Kendu?</b>\n\n"
-            "Kendu is a memecoin ecosystem and movement powered by autonomous community action — no bots, no market makers, no fluff.\n"
-            "All growth is grassroots. The more individuals activate, the faster we scale.\n"
-            "Kendu is a canvas for builders, artists, thinkers, and doers. A decentralized brand with unstoppable momentum."
+            "Kendu is a memecoin ecosystem and social movement led and driven forward by its community through organic effort. "
+            "We don't engage in paid marketing or fake engagement — everything comes from consistent daily action. "
+            "The more we activate, the faster Kendu rises. This is a masterclass in scaling through real conviction. 🚀"
         ),
         "faq_is_dog_token": (
             "🐕 <b>Is Kendu just another dog/animal token?</b>\n\n"
-            "Nope. The logo represents loyalty and tenacity — but Kendu isn’t about animal memes.\n"
-            "It’s a culture, not a gimmick.\n"
-            "A social brand for creatives, entrepreneurs, and dreamers building something real."
+            "Nope. The name and logo symbolize loyalty and tenacity, not memetic fluff. "
+            "Kendu is original IP with deep roots and a builder-first culture. This isn’t a gimmick. It’s a mission."
         ),
         "faq_next_level": (
             "🚀 <b>What will take Kendu to the next level?</b>\n\n"
-            "You. Your voice, your energy, your network.\n"
-            "There’s no ceiling if every holder becomes a marketer, creator, or builder.\n"
-            "This is the difference between a coin that pumps and a movement that endures."
+            "You. Your posts, your voice, your energy. Kendu scales with people who activate. "
+            "No matter your skill set — your impact is exponential if you show up daily and inspire others to join."
         ),
         "faq_help": (
             "🙋 <b>How can I help?</b>\n\n"
-            "1. Post on X, Reddit, TikTok, etc\n"
-            "2. Make content or memes\n"
-            "3. Comment, reply, amplify\n"
-            "4. Tell people IRL\n"
-            "5. Build something\n\n"
-            "If you’ve got skills — use them. If not, show up daily. That’s all it takes."
+            "Post, reply, share. Onboard friends. Rep IRL. Talk about Kendu on X, TikTok, Reddit, YouTube. "
+            "Be creative and respectful. This is a collective effort — be part of the reason we make it."
         ),
         "faq_marketcap": (
             "📈 <b>When are we reaching ___ market cap?</b>\n\n"
-            "When we earn it. Every viral moment, every new holder, every tweet compounds.\n"
-            "We grow through consistent action, not hype cycles.\n"
-            "10B isn’t a meme — it’s the result of community scaling and conviction."
+            "There's no set date. The pace is set by the community's daily energy. "
+            "If we scale our activity, the chart will follow. This is programmed growth — powered by us."
         ),
         "faq_dipping": (
             "📉 <b>Why is Kendu dipping/pumping?</b>\n\n"
-            "Markets breathe. Dips are redistribution.\n"
-            "Strong hands stay focused, weak hands get shaken out.\n"
-            "If you're zoomed out, you see consolidation — not panic.\n"
-            "This is where conviction compounds. We don’t gamble. We work."
+            "Markets breathe. Ups and downs are normal. Redistribution strengthens conviction. "
+            "Zoom out. Focus on community health and long-term culture, not short-term candles."
         ),
         "faq_safety": (
             "🛡️ <b>How can I keep my tokens safe?</b>\n\n"
-            "• Never share your seed phrase — no matter what\n"
-            "• Don’t click random links or connect unknown dApps\n"
-            "• Use a hardware wallet for large holdings\n"
-            "• Join Telegram from kendu.io — not search\n"
-            "Security = responsibility. Protect your keys."
+            "• Never share your seed phrase\n"
+            "• Use hardware or trusted wallets\n"
+            "• Double-check URLs before connecting\n"
+            "• Kendu will never DM or offer airdrops\n"
+            "Stay safe, stay vigilant!"
         )
     }
 
-    if question_id not in answers:
+    if data not in faq_data:
         return
 
-    text = answers[question_id]
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔙 Back", callback_data="faq")]
-    ])
+    text = faq_data[data]
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="faq")]])
 
     msg_id = context.user_data.get("menu_msg_id")
     if msg_id:
-        await edit_menu_response(context, update.effective_chat.id, msg_id, text, reply_markup)
+        await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
+    context.user_data["menu_msg_type"] = "text"
