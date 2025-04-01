@@ -4,37 +4,38 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from telegram.ext import ContextTypes
 
 async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, chat_id=None, message: Message = None):
-    # Determine source
+    # Determine context
     query = update.callback_query if update else None
-    message = query.message if query else message or update.message
+    is_slash = bool(update.message)
+    message = query.message if query else message
     chat_id = message.chat_id if message else chat_id
 
     if query:
         await query.answer()
 
-    # Prevent duplicate /menu messages
-    old_msg_id = context.user_data.get("menu_msg_id")
-    old_msg_type = context.user_data.get("menu_msg_type", "text")
-    
-    # Try deleting previous menu message (unless it's a photo)
-    if old_msg_id and old_msg_type == "text":
-        try:
-            await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
-        except Exception:
-            pass
-
-    # Delete slash command message to prevent clutter
-    if update.message:
+    # Delete slash command message
+    if is_slash:
         try:
             await update.message.delete()
         except Exception:
             pass
 
+    # Delete previous menu message if needed (image → text transition)
+    old_msg_id = context.user_data.get("menu_msg_id")
+    old_type = context.user_data.get("menu_msg_type", "text")
+
+    if old_msg_id:
+        try:
+            if old_type == "photo":
+                await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
+        except Exception:
+            pass
+
+    # Send fresh text menu
     text = (
         "🤖 <b>Kendu Main Menu</b>\n\n"
         "Tap an option below to explore:"
     )
-
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🧠 About", callback_data="about")],
         [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
@@ -53,4 +54,5 @@ async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE 
 
     context.user_data["menu_msg_id"] = sent.message_id
     context.user_data["menu_msg_type"] = "text"
+
 
