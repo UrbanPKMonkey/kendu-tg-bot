@@ -23,9 +23,34 @@ ROUTES = {
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
 
-    # Reset all previous menu state (but keep /start image alive)
     await _reset_user_state(update, context, reset_start=True)
 
+    caption = (
+        "<b>Welcome to the Official Kendu Bot</b>\n\n"
+        "Would you like to <b>start fresh</b> by wiping the bot's message history?\n\n"
+        "Choose below 👇"
+    )
+
+    reply_markup = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🧼 Start Fresh (Wipe History)", callback_data="start_wipe_confirmed"),
+            InlineKeyboardButton("🤖 Continue Without Deleting", callback_data="start_continue")
+        ]
+    ])
+
+    sent = await menu_handler(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=caption,
+        reply_markup=reply_markup
+    )
+
+    if hasattr(sent, "message_id"):
+        context.user_data["menu_start_msg_id"] = sent.message_id
+
+
+async def send_start_welcome_screen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     caption = (
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
         "<b>We don’t gamble, we work.</b> 💪\n\n"
@@ -58,7 +83,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
     ])
 
-    # Send new welcome image
     sent = await menu_handler(
         update=update,
         context=context,
@@ -68,7 +92,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-    # Track the new start message
     if hasattr(sent, "message_id"):
         context.user_data["menu_start_msg_id"] = sent.message_id
 

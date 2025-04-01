@@ -1,26 +1,11 @@
-"""
-Callbacks Router for Button Logic 🧠
-
-Routes based on callback `data` to modularized handlers in `handlers/sections/`
-
-handlers/
-├── callbacks.py          # ← You're here
-└── sections/
-    ├── menu.py           # Handles "menu"
-    ├── about.py          # Handles "about"
-    ├── ecosystem.py      # Handles "ecosystem"
-    ├── ecosystem_items.py# Handles "kendu_*"
-    ├── buy.py            # Handles "buy_*", "how_to_*"
-    ├── faq.py            # Handles "faq*"
-    ├── contracts.py      # Handles "contract_addresses"
-    └── follow.py         # Handles "follow_links"
-"""
-
 # handlers/callbacks.py
 
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from utils.message_tools import smart_send_or_edit, delete_all_bot_messages
+from utils.menu_tools import reset_menu_context, get_tracked_menu_state, safe_delete_message
 
+# Core handlers from sections/
 from handlers.sections.menu import handle_menu
 from handlers.sections.about import handle_about
 from handlers.sections.ecosystem import handle_ecosystem
@@ -30,7 +15,10 @@ from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
 
+# From commands.py
+from handlers.commands import send_start_welcome_screen, _reset_user_state
 
+# === Central Button Router ===
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data_override=None):
     query = update.callback_query if update else None
     data = query.data if query else data_override
@@ -38,7 +26,6 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
     if query:
         await query.answer()
 
-    # Route to the appropriate section
     if data == "menu":
         await handle_menu(update, context)
     elif data == "about":
@@ -59,11 +46,14 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
         await handle_contract_addresses(update, context)
     elif data == "follow_links":
         await handle_follow_links(update, context)
+    elif data == "start_wipe_confirmed":
+        await start_wipe_confirmed(update, context)
+    elif data == "start_continue":
+        await start_continue(update, context)
+    elif data == "restart_confirmed":
+        await restart_confirmed(update, context)
     else:
-        # Fallback
-        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-        from utils.message_tools import smart_send_or_edit
-
+        # Fallback for unknown buttons
         text = "⚠️ Unknown command. Please use /menu to get back to the main screen."
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🤖 Back to Menu", callback_data="menu")]
@@ -74,3 +64,26 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
             new_text=text,
             reply_markup=reply_markup
         )
+
+# === Custom Callback Handlers ===
+
+async def start_wipe_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🧼 Start wipe confirmed")
+    await delete_all_bot_messages(update, context)
+    await _reset_user_state(update, context, reset_start=True)
+    await send_start_welcome_screen(update, context)
+
+async def start_continue(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🤖 Start without wipe")
+    await _reset_user_state(update, context, reset_start=True)
+    await send_start_welcome_screen(update, context)
+
+async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🔁 Restart confirmed")
+    await delete_all_bot_messages(update, context)
+    await _reset_user_state(update, context, reset_start=True)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="🔁 Restarted. Use /start to begin fresh or /menu to resume.",
+        parse_mode="HTML"
+    )
