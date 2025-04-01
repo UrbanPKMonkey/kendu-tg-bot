@@ -9,7 +9,7 @@ from telegram.ext import ContextTypes
 from io import BytesIO
 import requests
 from PIL import Image
-from handlers.callbacks import handle_button
+
 
 async def smart_send_or_edit(
     query=None,
