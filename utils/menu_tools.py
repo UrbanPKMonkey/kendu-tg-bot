@@ -6,6 +6,7 @@ def reset_menu_context(context: ContextTypes.DEFAULT_TYPE):
     Clears all tracked menu state from user_data.
     Useful for: /start, /logout, onboarding resets, full restarts.
     """
+    # Pop keys safely, ensuring no error if they don't exist
     context.user_data.pop("menu_msg_id", None)
     context.user_data.pop("menu_msg_type", None)
     context.user_data.pop("menu_msg_ids", None)
@@ -28,10 +29,15 @@ def set_tracked_menu_state(context: ContextTypes.DEFAULT_TYPE, msg_id: int, msg_
     Supports multiple tracked messages (media + text variants).
     """
     msg_ids = context.user_data.get("menu_msg_ids", [])
-    msg_ids.append(msg_id)
-    context.user_data["menu_msg_ids"] = msg_ids
-    context.user_data["menu_msg_type"] = msg_type
-    print(f"📌 Menu tracked → id={msg_id}, type={msg_type}")
+    
+    # Avoid duplicating the same message ID
+    if msg_id not in msg_ids:
+        msg_ids.append(msg_id)
+        context.user_data["menu_msg_ids"] = msg_ids
+        context.user_data["menu_msg_type"] = msg_type
+        print(f"📌 Menu tracked → id={msg_id}, type={msg_type}")
+    else:
+        print(f"⚠️ Message ID {msg_id} already tracked")
 
 
 async def safe_delete_message(context: ContextTypes.DEFAULT_TYPE, chat_id: int, msg_id: int):
@@ -40,5 +46,6 @@ async def safe_delete_message(context: ContextTypes.DEFAULT_TYPE, chat_id: int, 
     """
     try:
         await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
+        print(f"🗑️ Successfully deleted message {msg_id}")
     except Exception as e:
         print(f"⚠️ Failed to delete message ({msg_id}): {e}")

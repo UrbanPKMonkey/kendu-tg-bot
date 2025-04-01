@@ -1,11 +1,18 @@
-# handlers/callbacks.py
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 # 🔧 Bot utilities
-from utils.message_tools import smart_send_or_edit, delete_all_bot_messages
-from utils.menu_tools import reset_menu_context, get_tracked_menu_state, safe_delete_message
+from utils.message_tools import (
+    smart_send_or_edit,
+    delete_all_bot_messages,
+    track_bot_message  # ✅ NEW
+)
+from utils.menu_tools import (
+    reset_menu_context,
+    get_tracked_menu_state,
+    safe_delete_message,
+)
+from utils.user_state import _reset_user_state
 
 # 📚 Core section handlers
 from handlers.sections.menu import handle_menu
@@ -16,10 +23,7 @@ from handlers.sections.buy import handle_buy_kendu, handle_buy_chain
 from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
-from handlers.sections.start import send_start_welcome_screen  # ✅ moved here
-
-# 🔁 Reset helper
-from utils.user_state import _reset_user_state
+from handlers.sections.start import send_start_welcome_screen
 
 
 # === 🧠 Central Callback Router ===
@@ -65,12 +69,13 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🤖 Back to Menu", callback_data="menu")]
         ])
-        await smart_send_or_edit(
+        sent = await smart_send_or_edit(
             query=query,
             context=context,
             new_text=text,
             reply_markup=reply_markup
         )
+        track_bot_message(context, sent)  # ✅ Track fallback message
 
 
 # === 🧼 /start: Wipe Confirmed ===
@@ -92,7 +97,6 @@ async def start_continue(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ Restart confirmed")
 
-    # 🧹 Delete previous messages
     try:
         if update.callback_query:
             await update.callback_query.message.delete()
@@ -101,16 +105,18 @@ async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         print(f"⚠️ Failed to delete restart messages: {e}")
 
-    # 🔁 Full reset
     await delete_all_bot_messages(update, context)
     await _reset_user_state(update, context, reset_start=True)
 
-    await context.bot.send_message(
+    sent = await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="🔁 Restart complete.\nUse /start to begin fresh or /menu to resume.",
         parse_mode="HTML"
     )
+    track_bot_message(context, sent)  # ✅ Track the confirmation
 
+
+# === ❌ /restart: Cancelled ===
 async def restart_cancelled(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("❌ Restart cancelled")
     await _reset_user_state(update, context, reset_start=False)

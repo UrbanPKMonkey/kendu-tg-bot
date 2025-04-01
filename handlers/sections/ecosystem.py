@@ -3,6 +3,8 @@ from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
 async def handle_ecosystem(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🌐 Ecosystem menu opened")
+
     text = (
         "🌐 <b>Kendu Ecosystem</b>\n\n"
         "Kendu is more than a token —\n"
@@ -32,3 +34,4 @@ async def handle_ecosystem(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text=text,
         reply_markup=reply_markup
     )
+    return

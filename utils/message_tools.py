@@ -9,13 +9,28 @@ from io import BytesIO
 import requests
 from PIL import Image
 
-# === Unified Send/Track Helper ===
+
+# === Message Tracking ===
+
+def track_bot_message(context, message: Message):
+    """
+    Tracks any message sent by the bot (menu or not).
+    Appends to user_data["all_bot_msg_ids"].
+    """
+    msg_list = context.user_data.get("all_bot_msg_ids", [])
+    msg_list.append(message.message_id)
+    context.user_data["all_bot_msg_ids"] = msg_list
+
 
 def _track_menu_message(context, sent: Message, msg_type: str):
-    """Tracks the sent message in user_data for later deletion/editing."""
+    """
+    Tracks menu message in a dedicated list (for edits).
+    Also tracks in all_bot_msg_ids.
+    """
     context.user_data["menu_msg_ids"] = [sent.message_id]
     context.user_data["menu_msg_type"] = msg_type
-    return sent  # Always return the message
+    track_bot_message(context, sent)
+    return sent
 
 
 # === Clean Smart Senders ===
@@ -127,6 +142,7 @@ async def delete_and_send_new(update, context, text, reply_markup=None, parse_mo
         reply_markup=reply_markup,
         parse_mode=parse_mode
     )
+    track_bot_message(context, sent)
     return sent
 
 
@@ -161,9 +177,9 @@ def get_contracts_text_and_markup():
         "<code>   0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>"
     )
 
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔙 Back", callback_data="menu")]
-    ])
+    reply_markup = InlineKeyboardMarkup([[
+        InlineKeyboardButton("🔙 Back", callback_data="menu")
+    ]])
 
     return text, reply_markup
 
@@ -199,20 +215,20 @@ async def clear_all_menus(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
 
 async def delete_all_bot_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    Deletes all tracked bot messages (if any).
-    Note: Bots cannot access full chat history via Telegram Bot API.
+    Deletes all messages ever sent by the bot in this session.
+    Wipes from user_data["all_bot_msg_ids"].
     """
     chat_id = update.effective_chat.id
-    msg_ids = context.user_data.get("menu_msg_ids", [])
+    all_msg_ids = context.user_data.get("all_bot_msg_ids", [])
 
-    for msg_id in msg_ids:
+    for msg_id in all_msg_ids:
         try:
             await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
         except Exception:
             pass  # already deleted or not allowed
 
-    print(f"🧼 Deleted {len(msg_ids)} tracked messages")  # ✅ Log it
+    print(f"🧼 Deleted {len(all_msg_ids)} total bot messages")
 
-    # Reset tracking after deletion
+    context.user_data["all_bot_msg_ids"] = []
     context.user_data["menu_msg_ids"] = []
     context.user_data["menu_msg_type"] = None

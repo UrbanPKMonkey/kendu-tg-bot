@@ -1,10 +1,12 @@
-# handlers/sections/follow.py
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
+
 async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Displays Kendu's official social links and ecosystem connections."""
+    print("🔗 Showing Kendu follow links")
+
     text = "🔗 <b>Follow Kendu</b>\n\nExplore our ecosystem and stay connected 👇"
 
     reply_markup = InlineKeyboardMarkup([
@@ -23,6 +25,7 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
+    # Send the follow links menu
     await menu_handler(
         update=update,
         context=context,
@@ -30,4 +33,3 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
         text=text,
         reply_markup=reply_markup
     )
-

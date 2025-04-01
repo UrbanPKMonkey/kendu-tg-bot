@@ -2,14 +2,15 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from handlers.callbacks import handle_button
-from handlers.sections.start import send_start_welcome_screen  # ✅ moved here
+from handlers.sections.start import send_start_welcome_screen
 from utils.menu_handler import menu_handler
 from utils.menu_tools import (
     reset_menu_context,
     get_tracked_menu_state,
     safe_delete_message,
 )
-from utils.user_state import _reset_user_state  # ✅ now in utils
+from utils.user_state import _reset_user_state
+from utils.message_tools import track_bot_message  # ✅ NEW
 
 # ===== Route map for slash commands → callback data =====
 ROUTES = {
@@ -77,11 +78,13 @@ async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd
 async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("👋 /logout received")
     await _reset_user_state(update, context, reset_start=True)
-    await context.bot.send_message(
+
+    sent = await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="✅ You’ve been logged out. Start again with /start or /menu.",
         parse_mode="HTML"
     )
+    track_bot_message(context, sent)  # ✅
 
 
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -94,9 +97,10 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     ])
 
-    await context.bot.send_message(
+    sent = await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="⚠️ <b>Are you sure you want to restart?</b>\n\nThis will wipe your current state and reinitialize the bot.",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
+    track_bot_message(context, sent)  # ✅

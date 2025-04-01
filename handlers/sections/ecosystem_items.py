@@ -4,6 +4,10 @@ from utils.menu_handler import menu_handler
 from utils.message_tools import add_black_background_to_image
 
 async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item: str):
+    """
+    Displays an individual ecosystem product page with image, description, and visit link.
+    """
+
     ecosystem_map = {
         "kendu_energy": {
             "title": "⚡ <b>Kendu Energy Drink</b>",
@@ -26,7 +30,7 @@ async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TY
         "kendu_style": {
             "title": "🧢 <b>Kendu Style</b>",
             "desc": "Rep the movement IRL. Kendu Style is bold, raw, and unmistakably you.\nCaps, tees, fits — made for the builders, doers, and believers.",
-            "photo": await add_black_background_to_image("https://www.kendu.io/assets/images/kendu-style-logo.png"),
+            "photo_fn": lambda: add_black_background_to_image("https://www.kendu.io/assets/images/kendu-style-logo.png"),
             "url": "https://kendustyle.com/"
         },
         "kendu_unstitched": {
@@ -38,12 +42,31 @@ async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TY
     }
 
     item_data = ecosystem_map.get(item)
+
     if not item_data:
+        print(f"❌ Unknown ecosystem item: {item}")
+        await menu_handler(
+            update=update,
+            context=context,
+            msg_type="text",
+            text="⚠️ This item is no longer available.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+            ])
+        )
         return
+
+    print(f"🌐 Showing ecosystem item: {item}")
+
+    # Handle image dynamically for style with black background
+    if "photo_fn" in item_data:
+        photo = await item_data["photo_fn"]()
+    else:
+        photo = item_data["photo"]
 
     caption = f"{item_data['title']}\n\n{item_data['desc']}"
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🌐 Visit Site", url=item_data['url'])],
+        [InlineKeyboardButton("🌐 Visit Site", url=item_data["url"])],
         [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
     ])
 
@@ -53,5 +76,5 @@ async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TY
         msg_type="photo",
         text=caption,
         reply_markup=reply_markup,
-        photo=item_data["photo"]
+        photo=photo
     )

@@ -36,6 +36,7 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text=text,
         reply_markup=reply_markup
     )
+    return
 
 
 # ===== Buy on Individual Chains =====
@@ -81,7 +82,7 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
 
     data = chains.get(chain)
     if not data:
-        print("❌ Invalid chain in handle_buy_chain")
+        print("❌ Invalid chain passed to handle_buy_chain")
         return
 
     text = (
@@ -105,3 +106,4 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
         text=text,
         reply_markup=reply_markup
     )
+    return

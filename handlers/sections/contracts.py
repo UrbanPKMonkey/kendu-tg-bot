@@ -6,6 +6,8 @@ from utils.menu_handler import menu_handler
 from utils.message_tools import get_contracts_text_and_markup
 
 async def handle_contract_addresses(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("📜 Contracts menu opened")
+
     text, reply_markup = get_contracts_text_and_markup()
 
     await menu_handler(
@@ -15,7 +17,4 @@ async def handle_contract_addresses(update: Update, context: ContextTypes.DEFAUL
         text=text,
         reply_markup=reply_markup
     )
-
-
-
-
+    return

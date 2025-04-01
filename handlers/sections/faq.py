@@ -3,7 +3,11 @@ from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
 
+# ===== 🤔 FAQ Menu =====
 async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Displays the FAQ category menu with list of common questions."""
+    print("📚 Showing FAQ menu")
+
     text = (
         "❓ <b>Frequently Asked Questions</b>\n\n"
         "Choose a question below to view the answer:"
@@ -30,7 +34,11 @@ async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+# ===== 📖 Answer Specific FAQ =====
 async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
+    """Routes to individual FAQ answers based on callback `data`."""
+    print(f"📖 Showing FAQ answer for: {data}")
+
     faq_data = {
         "faq_what_is_kendu": (
             "🔸 <b>What is Kendu?</b>\n\n"
@@ -74,6 +82,7 @@ async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     }
 
     if data not in faq_data:
+        print(f"⚠️ Unknown FAQ key: {data}")
         return
 
     text = faq_data[data]
