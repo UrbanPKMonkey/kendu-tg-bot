@@ -114,9 +114,6 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ===== Shared State Cleanup =====
 async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, reset_start=False):
-    """
-    Clears tracked menu messages. If reset_start is True, also allows deletion of /start.
-    """
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
 
@@ -130,5 +127,8 @@ async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     for msg_id in old_msg_ids:
         if reset_start or msg_id != preserved_id:
             await safe_delete_message(context, chat_id, msg_id)
+
+    if reset_start:
+        context.user_data["menu_start_msg_id"] = None
 
     reset_menu_context(context)
