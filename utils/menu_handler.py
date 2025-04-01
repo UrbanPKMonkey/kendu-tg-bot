@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, Message
 from telegram.ext import ContextTypes
 from utils.message_tools import (
     send_tracked_menu_text,
@@ -17,24 +17,24 @@ async def menu_handler(
     photo=None,
     video=None,
     document=None
-):
+) -> Message:
     """
     Smart menu rendering + cleanup for text, photo, video, and document.
     Tracks message IDs to prevent clutter and ensure clean transitions.
-    Returns True if no new message is needed (duplicate), else False.
+    Always returns the resulting Message object.
     """
-    
+
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
 
     if not chat_id:
         print("⚠️ No chat_id found. Skipping menu handling.")
-        return True
+        return None
 
     # Get stored /start message ID
     last_start_msg_id = context.user_data.get("menu_start_msg_id")
 
-    # Skip deletion if it's the start message (stored in context)
+    # Clean up the command message (unless it's the preserved /start message)
     if update.message and (last_start_msg_id != update.message.message_id):
         try:
             await update.message.delete()
@@ -44,7 +44,7 @@ async def menu_handler(
     old_msg_ids = context.user_data.get("menu_msg_ids", [])
     old_type = context.user_data.get("menu_msg_type", None)
 
-    # ✅ Attempt edit if same type
+    # ✅ Try editing if same type
     if old_msg_ids and old_type == msg_type:
         try:
             await context.bot.edit_message_reply_markup(
@@ -52,26 +52,28 @@ async def menu_handler(
                 message_id=old_msg_ids[-1],
                 reply_markup=reply_markup
             )
-            return True
+            # 🔁 Return the reused message
+            return await context.bot.get_message(chat_id=chat_id, message_id=old_msg_ids[-1])
         except Exception:
             print("⚠️ Old message not editable, sending new.")
 
-    # ❌ Delete all old tracked messages unless the last one was /start
+    # ❌ Delete all old tracked messages (except preserved /start)
     for msg_id in old_msg_ids:
-        if msg_id != last_start_msg_id:  # Don't delete the /start message
+        if msg_id != last_start_msg_id:
             try:
                 await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
             except Exception:
                 pass  # Already deleted
 
-    # 🚀 Send new menu by type
+    # 🚀 Send new menu message based on type
     if msg_type == "text" and text:
-        await send_tracked_menu_text(context, chat_id, text, reply_markup)
+        return await send_tracked_menu_text(context, chat_id, text, reply_markup)
     elif msg_type == "photo" and photo and text:
-        await send_tracked_menu_photo(context, chat_id, photo, text, reply_markup)
+        return await send_tracked_menu_photo(context, chat_id, photo, text, reply_markup)
     elif msg_type == "video" and video and text:
-        await send_tracked_menu_video(context, chat_id, video, text, reply_markup)
+        return await send_tracked_menu_video(context, chat_id, video, text, reply_markup)
     elif msg_type == "document" and document and text:
-        await send_tracked_menu_document(context, chat_id, document, text, reply_markup)
+        return await send_tracked_menu_document(context, chat_id, document, text, reply_markup)
 
-    return False
+    print("⚠️ Invalid or missing content for menu_handler")
+    return None

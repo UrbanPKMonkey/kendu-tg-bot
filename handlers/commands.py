@@ -69,7 +69,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     # Track the /start message to protect it from deletion
-    context.user_data["menu_start_msg_id"] = sent.message_id
+    # ✅ Only store if it's a real message (not just True)
+    if hasattr(sent, "message_id"):
+        context.user_data["menu_start_msg_id"] = sent.message_id
 
 
 # ===== Slash Command Routing =====
