@@ -1,14 +1,10 @@
 # handlers/sections/ecosystem.py
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
-async def handle_ecosystem(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message):
-    # Skip if already showing the same text menu
-    if await menu_handler(context, chat_id, message, current_type="text"):
-        return
-
+async def handle_ecosystem(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "🌐 <b>Kendu Ecosystem</b>\n\n"
         "Kendu is more than a token —\n"
@@ -31,12 +27,4 @@ async def handle_ecosystem(context: ContextTypes.DEFAULT_TYPE, chat_id: int, mes
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    sent = await context.bot.send_message(
-        chat_id=chat_id,
-        text=text,
-        reply_markup=reply_markup,
-        parse_mode="HTML"
-    )
-
-    context.user_data["menu_msg_id"] = sent.message_id
-    context.user_data["menu_msg_type"] = "text"
+    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)

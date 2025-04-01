@@ -1,14 +1,10 @@
 # handlers/sections/about.py
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
-async def handle_about(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message):
-    # Check if we should skip rendering
-    if await menu_handler(context, chat_id, message, current_type="text"):
-        return
-
+async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "🧠 <b>About Kendu</b>\n\n"
         "Kendu is a movement that empowers you to turn your life goals into reality.\n"
@@ -52,12 +48,4 @@ async def handle_about(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    sent = await context.bot.send_message(
-        chat_id=chat_id,
-        text=text,
-        reply_markup=reply_markup,
-        parse_mode="HTML"
-    )
-
-    context.user_data["menu_msg_id"] = sent.message_id
-    context.user_data["menu_msg_type"] = "text"
+    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)

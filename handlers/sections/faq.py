@@ -3,13 +3,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
-from utils.message_tools import edit_menu_response
 
-async def handle_faq_menu(context: ContextTypes.DEFAULT_TYPE, chat_id: int, update: Update = None):
-    # Prevent duplicate load
-    if await menu_handler(context, chat_id, update, current_type="text"):
-        return
 
+async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "❓ <b>Frequently Asked Questions</b>\n\n"
         "Choose a question below to view the answer:"
@@ -26,13 +22,10 @@ async def handle_faq_menu(context: ContextTypes.DEFAULT_TYPE, chat_id: int, upda
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    msg_id = context.user_data.get("menu_msg_id")
-    if msg_id:
-        await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
-    context.user_data["menu_msg_type"] = "text"
+    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)
 
 
-async def handle_faq_answer(context: ContextTypes.DEFAULT_TYPE, chat_id: int, data: str):
+async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
     faq_data = {
         "faq_what_is_kendu": (
             "🔸 <b>What is Kendu?</b>\n\n"
@@ -79,9 +72,8 @@ async def handle_faq_answer(context: ContextTypes.DEFAULT_TYPE, chat_id: int, da
         return
 
     text = faq_data[data]
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="faq")]])
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Back", callback_data="faq")]
+    ])
 
-    msg_id = context.user_data.get("menu_msg_id")
-    if msg_id:
-        await edit_menu_response(context, chat_id, msg_id, text, reply_markup)
-    context.user_data["menu_msg_type"] = "text"
+    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)

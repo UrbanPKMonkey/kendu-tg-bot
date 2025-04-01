@@ -136,4 +136,72 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
     )
 
 
+# ✅ New: Shared tracked text message sender
+async def send_tracked_menu_text(context, chat_id, text, reply_markup):
+    """
+    Sends a new text message and tracks it in user_data for back/duplicate logic.
+    """
+    sent = await context.bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    context.user_data.update({
+        "menu_msg_id": sent.message_id,
+        "menu_msg_type": "text"
+    })
 
+
+# ✅ New: Shared tracked photo sender
+async def send_tracked_menu_photo(context, chat_id, photo, caption, reply_markup):
+    """
+    Sends a new photo message and tracks it in user_data for back/duplicate logic.
+    """
+    sent = await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=photo,
+        caption=caption,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    context.user_data.update({
+        "menu_msg_id": sent.message_id,
+        "menu_msg_type": "photo"
+    })
+
+
+# ✅ New: Shared tracked video sender
+async def send_tracked_menu_video(context, chat_id, video, caption, reply_markup):
+    """
+    Sends a new video message and tracks it in user_data for back/duplicate logic.
+    """
+    sent = await context.bot.send_video(
+        chat_id=chat_id,
+        video=video,
+        caption=caption,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    context.user_data.update({
+        "menu_msg_id": sent.message_id,
+        "menu_msg_type": "video"
+    })
+
+
+# ✅ New: Shared tracked document sender
+async def send_tracked_menu_document(context, chat_id, document, caption, reply_markup):
+    """
+    Sends a new document and tracks it in user_data for back/duplicate logic.
+    """
+    sent = await context.bot.send_document(
+        chat_id=chat_id,
+        document=document,
+        caption=caption,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    context.user_data.update({
+        "menu_msg_id": sent.message_id,
+        "menu_msg_type": "document"
+    })    

@@ -1,11 +1,11 @@
 # handlers/sections/ecosystem_items.py
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.message_tools import add_black_background_to_image
 from utils.menu_handler import menu_handler
+from utils.message_tools import add_black_background_to_image
 
-async def handle_ecosystem_item(context: ContextTypes.DEFAULT_TYPE, chat_id: int, item: str):
+async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item: str):
     ecosystem_map = {
         "kendu_energy": {
             "title": "⚡ <b>Kendu Energy Drink</b>",
@@ -43,32 +43,17 @@ async def handle_ecosystem_item(context: ContextTypes.DEFAULT_TYPE, chat_id: int
     if not item_data:
         return
 
-    # Prevent duplicate loads
-    if await menu_handler(context, chat_id, None, current_type="photo"):
-        return
-
-    # Delete old tracked message if not already deleted
-    old_msg_id = context.user_data.get("menu_msg_id")
-    try:
-        if old_msg_id:
-            await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
-    except Exception:
-        pass
-
-    # Build photo content
     caption = f"{item_data['title']}\n\n{item_data['desc']}"
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🌐 Visit Site", url=item_data['url'])],
         [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
     ])
 
-    sent = await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=item_data["photo"],
-        caption=caption,
-        parse_mode="HTML",
-        reply_markup=reply_markup
+    await menu_handler(
+        update=update,
+        context=context,
+        msg_type="photo",
+        text=caption,
+        reply_markup=reply_markup,
+        photo=item_data["photo"]
     )
-
-    context.user_data["menu_msg_id"] = sent.message_id
-    context.user_data["menu_msg_type"] = "photo"

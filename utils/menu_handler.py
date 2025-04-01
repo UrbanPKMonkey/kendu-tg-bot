@@ -2,27 +2,32 @@
 
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from utils.message_tools import (
+    send_tracked_menu_text,
+    send_tracked_menu_photo,
+    send_tracked_menu_video,
+    send_tracked_menu_document
+)
 
 async def menu_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
     msg_type: str = "text",
     text: str = None,
-    reply_markup: InlineKeyboardMarkup = None
+    reply_markup: InlineKeyboardMarkup = None,
+    photo=None,
+    video=None,
+    document=None
 ):
     """
-    Handles all smart logic for menu/message management:
-    - Deletes slash command
-    - Avoids duplicates
-    - Deletes previous media/text if needed
-    - Sends and tracks new message
-    Returns: True if message already shown (no action), False if new one was sent.
+    Smart menu rendering + cleanup for text, photo, video, and document.
+    Returns True if no action needed (menu already shown), else False.
     """
 
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
 
-    # Delete slash command message
+    # 🧹 Delete /slash command message
     if update.message:
         try:
             await update.message.delete()
@@ -32,28 +37,25 @@ async def menu_handler(
     old_msg_id = context.user_data.get("menu_msg_id")
     old_type = context.user_data.get("menu_msg_type", "text")
 
-    # ✅ Already showing this message type — do nothing
+    # ✅ Already showing the same type
     if old_msg_id and old_type == msg_type:
         return True
 
-    # ❌ Different type (media ↔ text) — delete old
+    # ❌ Switching types — delete old
     if old_msg_id and old_type != msg_type:
         try:
             await context.bot.delete_message(chat_id=chat_id, message_id=old_msg_id)
         except Exception as e:
             print(f"⚠️ Failed to delete previous menu: {e}")
 
-    # 🧠 Send and track new menu text
+    # 🚀 Send new based on msg_type
     if msg_type == "text" and text:
-        sent = await context.bot.send_message(
-            chat_id=chat_id,
-            text=text,
-            reply_markup=reply_markup,
-            parse_mode="HTML"
-        )
-        context.user_data.update({
-            "menu_msg_id": sent.message_id,
-            "menu_msg_type": "text"
-        })
+        await send_tracked_menu_text(context, chat_id, text, reply_markup)
+    elif msg_type == "photo" and text and photo:
+        await send_tracked_menu_photo(context, chat_id, photo, text, reply_markup)
+    elif msg_type == "video" and text and video:
+        await send_tracked_menu_video(context, chat_id, video, text, reply_markup)
+    elif msg_type == "document" and text and document:
+        await send_tracked_menu_document(context, chat_id, document, text, reply_markup)
 
     return False

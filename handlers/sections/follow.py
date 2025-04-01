@@ -3,18 +3,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
-from utils.message_tools import smart_send_or_edit
 
-
-async def handle_follow_links(
-    context: ContextTypes.DEFAULT_TYPE,
-    chat_id: int,
-    update: Update = None,
-):
-    # Skip if already showing
-    if await menu_handler(context, chat_id, update, current_type="text"):
-        return
-
+async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "🔗 <b>Follow Kendu</b>\n\nExplore our ecosystem and stay connected 👇"
 
     reply_markup = InlineKeyboardMarkup([
@@ -33,12 +23,4 @@ async def handle_follow_links(
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    await smart_send_or_edit(
-        context=context,
-        query=update.callback_query if update else None,
-        new_text=text,
-        reply_markup=reply_markup,
-        message_override=update.message if update else None,
-    )
-
-    context.user_data["menu_msg_type"] = "text"
+    await menu_handler(update, context, msg_type="text", text=text, reply_markup=reply_markup)
