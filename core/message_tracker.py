@@ -10,12 +10,18 @@ def track_bot_message(context: ContextTypes.DEFAULT_TYPE, message: Message):
     print(f"📌 Tracked bot message: {message.message_id}")
 
 
-def track_menu_message(context: ContextTypes.DEFAULT_TYPE, message: Message, msg_type: str, section_key: str = None):
-    """Track the current menu message (used for re-rendering or skipping logic)."""
+def track_menu_message(context, message, msg_type: str, section_key: str = None):
+    """Track menu message + register in full bot messages for restart cleanup."""
     context.user_data["menu_msg_ids"] = [message.message_id]
     context.user_data["menu_msg_type"] = msg_type
     if section_key:
         context.user_data["menu_section"] = section_key
+
+    # ✅ Also track in all bot messages
+    msg_ids = context.user_data.get("all_bot_msg_ids", [])
+    msg_ids.append(message.message_id)
+    context.user_data["all_bot_msg_ids"] = msg_ids
+
     print(f"📌 Tracked menu message: id={message.message_id}, type={msg_type}, section={section_key}")
 
 
