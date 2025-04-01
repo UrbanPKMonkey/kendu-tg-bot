@@ -1,22 +1,17 @@
 # handlers/sections/menu.py
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from telegram.ext import ContextTypes
 
-async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, message_override=None):
-    """Handles the main menu rendering and cleanup."""
+async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, chat_id=None, message: Message = None):
+    # Determine source
     query = update.callback_query if update else None
-    chat_id = (query.message.chat_id if query else message_override.chat_id)
+    message = query.message if query else message
+    chat_id = message.chat_id if message else chat_id
 
-    # ✅ Delete old message if it's NOT a photo (i.e. not from /start)
-    try:
-        current_message = query.message if query else message_override
-        if current_message and not current_message.photo:
-            await current_message.delete()
-    except Exception:
-        pass  # Ignore deletion errors
+    if query:
+        await query.answer()
 
-    # 📲 Build menu text and buttons
     text = (
         "🤖 <b>Kendu Main Menu</b>\n\n"
         "Tap an option below to explore:"
@@ -31,7 +26,13 @@ async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE 
         [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
     ])
 
-    # ✅ Send new menu message
+    # Try deleting previous menu message (if not a photo)
+    try:
+        if message and not message.photo:
+            await message.delete()
+    except Exception:
+        pass
+
     sent = await context.bot.send_message(
         chat_id=chat_id,
         text=text,
@@ -39,6 +40,6 @@ async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE 
         parse_mode="HTML"
     )
 
-    # 💾 Track for back-navigation and cleanup
     context.user_data["menu_msg_id"] = sent.message_id
     context.user_data["menu_msg_type"] = "text"
+

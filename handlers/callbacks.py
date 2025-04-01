@@ -39,7 +39,7 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
 
     # Route to the appropriate section
     if data == "menu":
-        await handle_menu(context, chat_id, message)
+        await handle_menu(update=update, context=context, chat_id=chat_id, message=message)
     elif data == "about":
         await handle_about(context, chat_id, message)
     elif data == "ecosystem":
