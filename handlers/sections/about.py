@@ -36,19 +36,16 @@ async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "We grow with long-term vision, brick by brick, one heart at a time.\n\n"
 
         "📣 <b>A Masterclass in Community Building</b>\n"
-        "Kendu is a truly organic movement — no paid engagement, no fake activity.\n"
-        "Holders are encouraged to step up:\n"
-        "• Social posts\n"
-        "• Speaking on Spaces\n"
-        "• Building businesses\n"
-        "• Repping Kendu IRL\n\n"
-        "<b>The more who activate, the faster Kendu rises.</b>\n"
+        "Kendu is a truly organic movement with no paid engagement or fake activity.\n"
+        "Holders are encouraged to step up in their own way, whether through <b>social posts, speaking on Spaces, building Kendu businesses, or repping Kendu IRL</b>.\n"
+        "Tokens only reach super scale with full community activation.\n"
+        "<b>Be loud, be unignorable, do what others won’t. The more who activate, the faster Kendu rises.</b>\n"
         "Who will you be in Kendu?\n\n"
 
         "🎥 <b>Kendu Man Saves DeFi</b>\n"
-        "In Q3 2024, Kendu hosted one of DeFi’s biggest giveaways —\n"
-        "<b>1 billion $KENDU (~$50,000)</b> for the most creative promo video.\n"
-        "OG member <b>Trips</b> won with “Kendu Man” — and now proudly wears a massive Kendu tattoo across his ribs.\n\n"
+        "In Q3 2024, Kendu held one of DeFi’s biggest giveaways—<b>1 billion $KENDU, worth around $50,000</b> at the time, for the most creative promo video.\n"
+        "Over 20 entries came in, and OG member Trips won with his <b>“Kendu Man”</b> video.\n"
+        "He also proudly sports one of the largest Kendu tattoos across his ribs.\n\n"
 
         "🪖 <b>We don’t gamble. We work!</b>"
     )

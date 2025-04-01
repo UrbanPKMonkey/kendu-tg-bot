@@ -14,12 +14,12 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "<b>Welcome to the Kendu Ecosystem Menu</b>\n\n"
         "Explore the decentralized world of Kendu Inu:\n\n"
-        "🧠 /about — What is Kendu?\n"
-        "🌱 /eco — Our Ecosystem\n"
-        "💰 /buykendu — How to Buy\n"
-        "📄 /contracts — Contract Addresses\n"
-        "❓ /faq — Questions & Answers\n"
-        "🌐 /follow — Socials & Links\n\n"
+        "🧠 /about → What is Kendu?\n"
+        "🌱 /eco → Our Ecosystem\n"
+        "💰 /buykendu → How to Buy\n"
+        "📄 /contracts → Contract Addresses\n"
+        "❓ /faq → Questions & Answers\n"
+        "🔗 /follow → Socials & Links\n\n"
         "Choose an option below 👇"
     )
 
@@ -29,7 +29,7 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
         [InlineKeyboardButton("📄 Contract Addresses", callback_data="contract_addresses")],
         [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
-        [InlineKeyboardButton("🌐 Follow Links", callback_data="follow_links")]
+        [InlineKeyboardButton("🔗 Follow Links", callback_data="follow_links")]
     ])
 
     await menu_renderer(

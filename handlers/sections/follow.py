@@ -10,7 +10,13 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     print("🔗 Showing Kendu follow links")
 
-    text = "🔗 <b>Follow Kendu</b>\n\nExplore our ecosystem and stay connected 👇"
+    text = (
+        "🔗 <b>Follow Kendu</b>\n\n"
+        "Stay locked in with the movement. Kendu isn’t just a token — it’s a force.\n"
+        "From viral videos to global community drops, we’re building across every platform.\n"
+        "Be first to know. Be loud. Be part of something bigger.\n\n"
+        "👇 Tap a link and join the mission."
+    )
 
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🌐 Official Website", url="https://kendu.io")],
