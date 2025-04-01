@@ -52,9 +52,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Made with ❤️ by the Kendu Community."
     )
 
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
-    ])
+    reply_markup = InlineKeyboardMarkup([[
+        InlineKeyboardButton("🤖 Menu", callback_data="menu")
+    ]])
 
     await menu_handler(
         update=update,
