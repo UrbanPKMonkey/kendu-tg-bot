@@ -121,3 +121,36 @@ async def restart_cancelled(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("❌ Restart cancelled")
     await _reset_user_state(update, context, reset_start=False)
     await handle_button(update, context, data_override="menu")
+
+
+async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles the /commands button click to show available commands."""
+    commands_text = (
+        "📝 <b>Available Commands</b>\n\n"
+        "/start  → Start the bot and get the welcome screen\n"
+        "/menu   → Open the main Kendu Menu\n"
+        "/about  → Learn about Kendu\n"
+        "/eco    → Explore the Ecosystem\n"
+        "/buykendu → How to Buy Kendu\n"
+        "/contracts → View Contract Addresses\n"
+        "/faq    → Frequently Asked Questions\n"
+        "/follow → Official Links & Socials\n"
+        "/logout → Clear menu state and reset\n"
+        "/restart → Full reset & reinit the bot"
+    )
+
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Back", callback_data="menu")]
+    ])
+
+    # Send the list of commands
+    await menu_handler(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=commands_text,
+        reply_markup=reply_markup
+    )
+
+# Register this handler in your bot setup
+bot_app.add_handler(CallbackQueryHandler(handle_show_commands, pattern="^show_commands$"))    

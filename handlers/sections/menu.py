@@ -24,7 +24,7 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
         [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
         [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")],
-        [InlineKeyboardButton("/commands", callback_data="commands")]  # Add /commands button
+        [InlineKeyboardButton("💬 /commands", callback_data="show_commands")]  # New button for commands
     ]
 
     # Create inline keyboard with buttons

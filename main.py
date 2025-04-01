@@ -94,7 +94,8 @@ def register_slash_commands():
 # 🔘 Inline Button Callbacks
 def register_inline_callbacks():
     """Register the callback handler for inline buttons."""
-    bot_app.add_handler(CallbackQueryHandler(handle_button))
+    bot_app.add_handler(CallbackQueryHandler(handle_button))  # Existing handler for other buttons
+    bot_app.add_handler(CallbackQueryHandler(handle_show_commands, pattern="^show_commands$"))  # New handler for /commands
 
 # 🔧 Attach post-init setup
 bot_app.post_init = post_init
