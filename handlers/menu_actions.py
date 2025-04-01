@@ -1,13 +1,17 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from core.user_state import _reset_user_state
 from core.message_tracker import track_bot_message
-from ui.menu_renderer import menu_renderer
-from handlers.sections.start import send_start_welcome_screen
-
 from core.menu_state import delete_all_bot_messages, reset_menu_context
+from ui.menu_renderer import menu_renderer
+
+# 🧭 Adjust path depending on where start.py is:
+from handlers.sections.start import send_start_welcome_screen
+# OR if you didn’t move it:
+# from handlers.start import send_start_welcome_screen
+
+from handlers.sections.menu import handle_menu
 
 
 # === 🧼 /start: Wipe Confirmed ===
@@ -54,9 +58,6 @@ async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def restart_cancelled(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("❌ Restart cancelled")
     await _reset_user_state(update, context, reset_start=False)
-
-    # Simulate return to menu
-    from handlers.sections.menu import handle_menu
     await handle_menu(update, context)
 
 
@@ -72,3 +73,34 @@ async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
     track_bot_message(context, sent)
+
+
+# === 📜 /commands Inline Button ===
+async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles the /commands button click to show available commands."""
+    commands_text = (
+        "📝 <b>Available Commands</b>\n\n"
+        "/start     → Welcome screen\n"
+        "/menu      → Open the main menu\n"
+        "/about     → Learn about Kendu\n"
+        "/eco       → Explore the Ecosystem\n"
+        "/buykendu  → How to Buy\n"
+        "/contracts → View Contract Addresses\n"
+        "/faq       → Questions & Answers\n"
+        "/follow    → Official Links & Socials\n"
+        "/logout    → Clear menu state and reset\n"
+        "/restart   → Full reset & reinit the bot"
+    )
+
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Back", callback_data="menu")]
+    ])
+
+    await menu_renderer(
+        update=update,
+        context=context,
+        msg_type="text",
+        text=commands_text,
+        reply_markup=reply_markup,
+        section_key="commands"
+    )
