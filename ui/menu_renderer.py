@@ -26,6 +26,12 @@ async def menu_renderer(
     old_msg_ids, old_type, _ = get_tracked_menu_state(context)
     chat_id = update.effective_chat.id
 
+    # 🔄 If message type has changed → delete old one
+    if old_msg_ids and old_type != msg_type:
+        print(f"🔄 Message type changed ({old_type} → {msg_type}) — deleting old message.")
+        await safe_delete_message(context, chat_id, old_msg_ids[-1])
+        old_msg_ids = []  # Clear so it doesn't attempt edit below
+
     # ✏️ Try editing old message of the same type
     if old_msg_ids and old_type == msg_type:
         try:
@@ -45,8 +51,10 @@ async def menu_renderer(
                     reply_markup=reply_markup,
                     parse_mode=parse_mode
                 )
+            elif msg_type in ["video", "document", "animation"]:
+                raise Exception("Edit not supported for this type")  # Telegram doesn't support editing these
             else:
-                raise Exception("Edit not supported for this type")
+                raise Exception("Unknown msg_type")
 
             print(f"✏️ Edited {msg_type} message: {sent.message_id}")
             track_menu_message(context, sent, msg_type, section_key)
