@@ -18,8 +18,8 @@ async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         print("⚠️ No chat_id found during reset")
         return
 
-    # Retrieve the list of tracked messages
-    old_msg_ids, _ = get_tracked_menu_state(context)
+    # ✅ Corrected unpacking: 3 values returned
+    old_msg_ids, _, _ = get_tracked_menu_state(context)
     start_msg_id = context.user_data.get("menu_start_msg_id")
     deleted = []
 
