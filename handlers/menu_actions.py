@@ -67,7 +67,7 @@ async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     chat_id = update.effective_chat.id
 
-    # Step 1: Try deleting the message that triggered the callback or slash
+    # Step 1: Delete the /restart message
     try:
         if update.callback_query:
             await update.callback_query.message.delete()
@@ -76,21 +76,34 @@ async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         print(f"⚠️ Failed to delete /restart message: {e}")
 
-    # Step 2: Wipe all previously tracked messages
-    await delete_all_bot_messages(update, context)
-    reset_menu_context(context)
-    await _reset_user_state(update, context, reset_start=True)
-
-    # Step 3: Send the final confirmation message
+    # Step 2: Send the confirmation message first
     sent = await context.bot.send_message(
         chat_id=chat_id,
         text="🔁 Restart complete.\nUse /start to begin fresh or /menu to resume.",
         parse_mode="HTML"
     )
 
-    # Step 4: Track only the final confirmation message
-    context.user_data["all_bot_msg_ids"] = [sent.message_id]
-    print(f"📌 Tracked only restart confirmation message: {sent.message_id}")
+    # Step 3: Collect all existing bot message IDs
+    tracked_ids = context.user_data.get("all_bot_msg_ids", [])
+    restart_msg_id = sent.message_id
+
+    deleted = []
+    for msg_id in tracked_ids:
+        if msg_id != restart_msg_id:
+            try:
+                await context.bot.delete_message(chat_id, msg_id)
+                deleted.append(msg_id)
+            except Exception:
+                pass
+
+    print(f"🧼 Deleted {len(deleted)} old tracked messages before restart confirmation")
+
+    # Step 4: Reset context and track only this message
+    reset_menu_context(context)
+    await _reset_user_state(update, context, reset_start=True)
+
+    context.user_data["all_bot_msg_ids"] = [restart_msg_id]
+    print(f"📌 Tracked only restart confirmation message: {restart_msg_id}")
 
 
 # === ❌ /restart: Cancelled ===
