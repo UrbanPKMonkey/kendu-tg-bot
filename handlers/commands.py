@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.callbacks import handle_button
-from utils.message_tools import delete_and_send_new
+from utils.message_tools import delete_and_send_new, simulate_button
 
 # ✅ Simulates a button tap from a slash command
 async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
@@ -62,10 +62,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"❌ Error in /start: {e}")
 
 # ✅ Slash commands that DELETE before simulating buttons
+
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /menu command received")
-    await delete_and_send_new(update, context, "⏳ Loading Menu…")
-    await simulate_button(update, context, "menu")
+    # Send a loading message
+    loading_msg = await update.message.reply_text("🔁 Loading Menu...")
+
+    # Simulate pressing the "menu" button
+    await simulate_button(update, context, data="menu")
+
+    # Delete the original slash command message ("/menu")
+    try:
+        await update.message.delete()
+    except Exception:
+        pass
+
+    # Delete the "Loading Menu..." message
+    try:
+        await loading_msg.delete()
+    except Exception:
+        pass
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /about command received")
