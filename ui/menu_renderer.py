@@ -23,14 +23,17 @@ async def menu_renderer(
     Supports "text", "photo", "video", "document", and "animation".
     Tracks section identity for clean re-renders.
     """
-    old_msg_ids, old_type, _ = get_tracked_menu_state(context)
+    old_msg_ids, old_type, old_section = get_tracked_menu_state(context)
     chat_id = update.effective_chat.id
 
-    # 🔄 If message type has changed → delete old one
+    # 🔄 If message type has changed → delete old one (unless it's from /start)
     if old_msg_ids and old_type != msg_type:
-        print(f"🔄 Message type changed ({old_type} → {msg_type}) — deleting old message.")
-        await safe_delete_message(context, chat_id, old_msg_ids[-1])
-        old_msg_ids = []  # Clear so it doesn't attempt edit below
+        if old_section != "start":
+            print(f"🔄 Message type changed ({old_type} → {msg_type}) — deleting old message.")
+            await safe_delete_message(context, chat_id, old_msg_ids[-1])
+            old_msg_ids = []
+        else:
+            print("⏭️ Preserving welcome screen message — skipping deletion.")
 
     # ✏️ Try editing old message of the same type
     if old_msg_ids and old_type == msg_type:
@@ -52,7 +55,7 @@ async def menu_renderer(
                     parse_mode=parse_mode
                 )
             elif msg_type in ["video", "document", "animation"]:
-                raise Exception("Edit not supported for this type")  # Telegram doesn't support editing these
+                raise Exception("Edit not supported for this type")
             else:
                 raise Exception("Unknown msg_type")
 
@@ -63,6 +66,7 @@ async def menu_renderer(
         except Exception as e:
             print(f"⚠️ Cannot edit {msg_type} — deleting and resending. Reason: {e}")
             await safe_delete_message(context, chat_id, old_msg_ids[-1])
+            old_msg_ids = []
 
     # ➕ Send a new message
     if msg_type == "text":
