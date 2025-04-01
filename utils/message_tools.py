@@ -2,14 +2,67 @@ from telegram import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
     Update,
-    InputMediaPhoto,
-    Message,
+    Message
 )
 from telegram.ext import ContextTypes
 from io import BytesIO
 import requests
 from PIL import Image
 
+
+# === Unified Send/Track Helper ===
+def _track_menu_message(context, sent, msg_type):
+    context.user_data["menu_msg_ids"] = [sent.message_id]
+    context.user_data["menu_msg_type"] = msg_type
+    return sent
+
+
+# === Clean Smart Senders ===
+
+async def send_tracked_menu_text(context, chat_id, text, reply_markup):
+    sent = await context.bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    return _track_menu_message(context, sent, "text")
+
+
+async def send_tracked_menu_photo(context, chat_id, photo, caption, reply_markup):
+    sent = await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=photo,
+        caption=caption,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    return _track_menu_message(context, sent, "photo")
+
+
+async def send_tracked_menu_video(context, chat_id, video, caption, reply_markup):
+    sent = await context.bot.send_video(
+        chat_id=chat_id,
+        video=video,
+        caption=caption,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    return _track_menu_message(context, sent, "video")
+
+
+async def send_tracked_menu_document(context, chat_id, document, caption, reply_markup):
+    sent = await context.bot.send_document(
+        chat_id=chat_id,
+        document=document,
+        caption=caption,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    return _track_menu_message(context, sent, "document")
+
+
+# === Smart Editor / Replacer ===
 
 async def smart_send_or_edit(
     query=None,
@@ -19,19 +72,8 @@ async def smart_send_or_edit(
     parse_mode: str = "HTML",
     message_override: Message = None
 ):
-    """
-    Edits or sends a new message depending on interaction context.
-    Automatically deletes old message if necessary.
-    """
-    if query:
-        chat_id = query.message.chat_id
-        message = query.message
-    elif message_override:
-        chat_id = message_override.chat_id
-        message = message_override
-    else:
-        raise ValueError("No valid message or query provided to smart_send_or_edit.")
-
+    message = query.message if query else message_override
+    chat_id = message.chat_id if message else None
     old_msg_id = context.user_data.get("menu_msg_id")
     old_type = context.user_data.get("menu_msg_type", "text")
     force_new = bool(message_override) or old_type != "text"
@@ -64,12 +106,10 @@ async def smart_send_or_edit(
         reply_markup=reply_markup,
         parse_mode=parse_mode
     )
-    context.user_data["menu_msg_id"] = sent.message_id
-    context.user_data["menu_msg_type"] = "text"
+    _track_menu_message(context, sent, "text")
 
 
 async def delete_and_send_new(update, context, text, reply_markup=None, parse_mode="HTML"):
-    """Deletes the previous message (if applicable) and sends a fresh new message."""
     try:
         if update.message:
             await update.message.delete()
@@ -78,19 +118,17 @@ async def delete_and_send_new(update, context, text, reply_markup=None, parse_mo
     except Exception as e:
         print(f"⚠️ Failed to delete message: {e}")
 
-    new_msg = await context.bot.send_message(
+    return await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
         reply_markup=reply_markup,
         parse_mode=parse_mode
     )
-    return new_msg
 
+
+# === Visual Tools ===
 
 async def add_black_background_to_image(image_url: str) -> BytesIO:
-    """
-    Adds a black background behind transparent PNGs for Telegram compatibility.
-    """
     response = requests.get(image_url)
     original = Image.open(BytesIO(response.content)).convert("RGBA")
 
@@ -104,10 +142,9 @@ async def add_black_background_to_image(image_url: str) -> BytesIO:
     return output
 
 
+# === Static Menus ===
+
 def get_contracts_text_and_markup():
-    """
-    Returns contract text + back button markup.
-    """
     text = (
         "🧾 <b>Contract Addresses</b>\n\n"
         "⚫ <b>Ethereum (ETH):</b>\n"
@@ -126,7 +163,6 @@ def get_contracts_text_and_markup():
 
 
 async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
-    """Edits an existing tracked menu message by ID."""
     await context.bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
@@ -134,74 +170,3 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
         parse_mode="HTML",
         reply_markup=reply_markup
     )
-
-
-# ✅ New: Shared tracked text message sender
-async def send_tracked_menu_text(context, chat_id, text, reply_markup):
-    """
-    Sends a new text message and tracks it in user_data for back/duplicate logic.
-    """
-    sent = await context.bot.send_message(
-        chat_id=chat_id,
-        text=text,
-        reply_markup=reply_markup,
-        parse_mode="HTML"
-    )
-    context.user_data.update({
-        "menu_msg_id": sent.message_id,
-        "menu_msg_type": "text"
-    })
-
-
-# ✅ New: Shared tracked photo sender
-async def send_tracked_menu_photo(context, chat_id, photo, caption, reply_markup):
-    """
-    Sends a new photo message and tracks it in user_data for back/duplicate logic.
-    """
-    sent = await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=photo,
-        caption=caption,
-        reply_markup=reply_markup,
-        parse_mode="HTML"
-    )
-    context.user_data.update({
-        "menu_msg_id": sent.message_id,
-        "menu_msg_type": "photo"
-    })
-
-
-# ✅ New: Shared tracked video sender
-async def send_tracked_menu_video(context, chat_id, video, caption, reply_markup):
-    """
-    Sends a new video message and tracks it in user_data for back/duplicate logic.
-    """
-    sent = await context.bot.send_video(
-        chat_id=chat_id,
-        video=video,
-        caption=caption,
-        reply_markup=reply_markup,
-        parse_mode="HTML"
-    )
-    context.user_data.update({
-        "menu_msg_id": sent.message_id,
-        "menu_msg_type": "video"
-    })
-
-
-# ✅ New: Shared tracked document sender
-async def send_tracked_menu_document(context, chat_id, document, caption, reply_markup):
-    """
-    Sends a new document and tracks it in user_data for back/duplicate logic.
-    """
-    sent = await context.bot.send_document(
-        chat_id=chat_id,
-        document=document,
-        caption=caption,
-        reply_markup=reply_markup,
-        parse_mode="HTML"
-    )
-    context.user_data.update({
-        "menu_msg_id": sent.message_id,
-        "menu_msg_type": "document"
-    })    
