@@ -5,27 +5,24 @@ from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
 async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, chat_id=None, message: Message = None):
-    # Determine source
+    # Determine context
     query = update.callback_query if update else None
+    is_slash = bool(update.message)
     message = query.message if query else message
     chat_id = message.chat_id if message else chat_id
 
     if query:
         await query.answer()
 
-    # If triggered by slash command, delete that command message
-    if update and update.message:
-        try:
-            await update.message.delete()
-        except Exception:
-            pass
+    # Use shared menu_handler to avoid duplicates or re-sending
+    if await menu_handler(context, chat_id, message, msg_type="text"):
+        return
 
-    # Build menu
+    # Send fresh text menu
     text = (
         "🤖 <b>Kendu Main Menu</b>\n\n"
         "Tap an option below to explore:"
     )
-
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🧠 About", callback_data="about")],
         [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
@@ -35,5 +32,12 @@ async def handle_menu(update: Update = None, context: ContextTypes.DEFAULT_TYPE 
         [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")]
     ])
 
-    # Use universal menu handler to avoid duplication or ghost messages
-    await menu_handler(context, chat_id, text, reply_markup, message)
+    sent = await context.bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+
+    context.user_data["menu_msg_id"] = sent.message_id
+    context.user_data["menu_msg_type"] = "text"
