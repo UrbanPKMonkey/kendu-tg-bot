@@ -22,7 +22,7 @@ ROUTES = {
 # ===== /start command (welcome image and context reset) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
-    await _reset_user_state(update, context, reset_start=True)
+    await _reset_user_state(update, context)
 
     caption = (
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
@@ -56,7 +56,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         InlineKeyboardButton("🤖 Menu", callback_data="menu")
     ]])
 
-    # Sending the message and tracking the ID
     sent = await menu_handler(
         update=update,
         context=context,
@@ -66,8 +65,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-    # Store the message ID for future reference (avoid deleting the /start message)
-    context.user_data["menu_start_msg_id"] = sent.message_id
+    # Only store the message_id if a new message was sent
+    if not sent:  # menu_handler returned True, meaning no new message was sent
+        print("⚠️ No new message sent, skipping message_id storage.")
+    else:
+        context.user_data["menu_start_msg_id"] = sent.message_id
+        print(f"📌 Menu tracked → id={sent.message_id}, type=photo")
 
 # ===== Unified Slash Command Routing =====
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "menu")
