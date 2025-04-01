@@ -2,18 +2,27 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.callbacks import handle_button
 from utils.message_tools import delete_and_send_new
-from utils.simulate import simulate_button
 
-# ✅ Simulates a button tap from a slash command
+# ✅ Simulate button press from slash command
 async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
+    print(f"🔁 simulate_button triggered with data: {data}")
+
     try:
-        print(f"🔁 simulate_button triggered with data: {data}")
+        message = update.message if update and update.message else None
+
         await handle_button(
             update=None,
             context=context,
             data_override=data,
-            message_override=update.message
+            message_override=message
         )
+
+        if message:
+            try:
+                await message.delete()
+            except Exception as e:
+                print(f"⚠️ Failed to delete slash command message: {e}")
+
     except Exception as e:
         print(f"❌ simulate_button error for '{data}': {e}")
 
@@ -65,23 +74,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ✅ Slash commands that DELETE before simulating buttons
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Send a loading message
-    loading_msg = await update.message.reply_text("🔁 Loading Menu...")
+    print("📩 /menu command received")
 
-    # Simulate pressing the "menu" button
+    # Send loading message only if slash command (has update.message)
+    loading_msg = None
+    if update.message:
+        try:
+            loading_msg = await update.message.reply_text("🔁 Loading Menu...")
+        except Exception as e:
+            print(f"⚠️ Failed to send loading message: {e}")
+
+    # Run simulated button press
     await simulate_button(update, context, data="menu")
 
-    # Delete the original slash command message ("/menu")
-    try:
-        await update.message.delete()
-    except Exception:
-        pass
-
-    # Delete the "Loading Menu..." message
-    try:
-        await loading_msg.delete()
-    except Exception:
-        pass
+    # Delete loading message if it was sent
+    if loading_msg:
+        try:
+            await loading_msg.delete()
+        except Exception as e:
+            print(f"⚠️ Failed to delete loading message: {e}")
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📩 /about command received")
