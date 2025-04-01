@@ -1,12 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-# 🧠 Bot utilities
-from core.menu_state import reset_menu_context, get_tracked_menu_state, safe_delete_message
+# 🔧 Core utilities used here
 from core.message_tracker import track_bot_message
 from ui.menu_renderer import menu_renderer
-from ui.menu_ui import get_contracts_text_and_markup, smart_send_or_edit
-from core.user_state import _reset_user_state
 
 # 📚 Section handlers
 from handlers.sections.menu import handle_menu
@@ -18,7 +15,7 @@ from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
 
-# 🚀 Shared action handlers
+# 🚀 Action callbacks
 from handlers.menu_actions import (
     start_wipe_confirmed,
     start_continue,
@@ -69,10 +66,11 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🤖 Back to Menu", callback_data="menu")]
         ])
-        sent = await smart_send_or_edit(
-            query=query,
+        sent = await menu_renderer(
+            update=update,
             context=context,
-            new_text=text,
+            msg_type="text",
+            text=text,
             reply_markup=reply_markup
         )
         track_bot_message(context, sent)
