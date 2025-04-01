@@ -198,12 +198,21 @@ async def clear_all_menus(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
 # === Full Wipe Utility ===
 
 async def delete_all_bot_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Deletes up to 100 of the bot’s own messages from the chat."""
+    """
+    Deletes all tracked bot messages (if any).
+    Note: Bots cannot access full chat history via Telegram Bot API.
+    """
     chat_id = update.effective_chat.id
+    msg_ids = context.user_data.get("menu_msg_ids", [])
 
-    async for message in context.bot.get_chat_history(chat_id=chat_id, limit=100):
-        if message.from_user and message.from_user.id == context.bot.id:
-            try:
-                await context.bot.delete_message(chat_id, message.message_id)
-            except Exception:
-                pass  # already gone or can't delete
+    for msg_id in msg_ids:
+        try:
+            await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
+        except Exception:
+            pass  # already deleted or not allowed
+
+    print(f"🧼 Deleted {len(msg_ids)} tracked messages")  # ✅ Log it
+
+    # Reset tracking after deletion
+    context.user_data["menu_msg_ids"] = []
+    context.user_data["menu_msg_type"] = None
