@@ -7,7 +7,7 @@ from telegram import Update, BotCommand, MenuButtonCommands
 from telegram.ext import Application, CallbackQueryHandler
 
 # 🔧 Routing Logic
-from handlers.router_commands import register_slash_commands
+from handlers.router_commands import register_slash_commands, COMMAND_DEFINITIONS
 from handlers.router_callbacks import handle_button, handle_show_commands
 
 # 🌱 Load environment variables
@@ -22,22 +22,12 @@ if not BOT_TOKEN or not RAILWAY_URL:
 # 🤖 Build the Telegram bot app
 bot_app = Application.builder().token(BOT_TOKEN).updater(None).build()
 
-# 🛠️ Post-init: setup webhook + slash commands
+# 🛠️ Post-init: setup webhook + dynamic slash commands
 async def post_init(application):
     print("🛠️ Setting up webhook + commands...")
 
-    commands = [
-        BotCommand("start", "Start the bot and get the welcome screen"),
-        BotCommand("menu", "Open the main menu"),
-        BotCommand("about", "Learn about Kendu"),
-        BotCommand("eco", "Explore the Ecosystem"),
-        BotCommand("buykendu", "How to Buy Kendu"),
-        BotCommand("contracts", "View Contract Addresses"),
-        BotCommand("faq", "Questions & Answers"),
-        BotCommand("follow", "Official Links & Socials"),
-        BotCommand("logout", "Clear menu state and reset"),
-        BotCommand("restart", "Full reset & reinit the bot")
-    ]
+    # 🔄 Dynamic command suggestions (blue menu)
+    commands = [BotCommand(cmd, desc) for cmd, desc in COMMAND_DEFINITIONS]
     await application.bot.set_my_commands(commands)
     await application.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
 

@@ -13,20 +13,35 @@ from handlers.sections.follow import handle_follow_links
 from handlers.menu_actions import handle_start, logout, ask_restart_confirmation
 
 
-def register_slash_commands(bot_app):
-    """Register all slash commands with the bot (with cleanup)."""
-    commands = [
-        ("start", handle_start),
-        ("menu", handle_menu),
-        ("about", handle_about),
-        ("eco", handle_ecosystem),
-        ("buykendu", handle_buy_kendu),
-        ("contracts", handle_contract_addresses),
-        ("faq", handle_faq_menu),
-        ("follow", handle_follow_links),
-        ("logout", logout),
-        ("restart", ask_restart_confirmation),
-    ]
+# 🌐 Centralized list for both slash registration + blue Telegram menu
+COMMAND_DEFINITIONS = [
+    ("start", "Start the bot and show welcome screen"),
+    ("menu", "Open the main menu"),
+    ("about", "Learn about Kendu"),
+    ("eco", "Explore the Ecosystem"),
+    ("buykendu", "How to Buy"),
+    ("contracts", "View Contract Addresses"),
+    ("faq", "Frequently Asked Questions"),
+    ("follow", "Official Links & Socials"),
+    ("logout", "Clear menu state and reset"),
+    ("restart", "Full reset and start fresh"),
+]
 
-    for cmd, handler in commands:
+
+def register_slash_commands(bot_app):
+    """Register all slash commands with the bot (wrapped for cleanup)."""
+    command_handlers = {
+        "start": handle_start,
+        "menu": handle_menu,
+        "about": handle_about,
+        "eco": handle_ecosystem,
+        "buykendu": handle_buy_kendu,
+        "contracts": handle_contract_addresses,
+        "faq": handle_faq_menu,
+        "follow": handle_follow_links,
+        "logout": logout,
+        "restart": ask_restart_confirmation,
+    }
+
+    for cmd, handler in command_handlers.items():
         bot_app.add_handler(CommandHandler(cmd, wrap_command_handler(handler)))
