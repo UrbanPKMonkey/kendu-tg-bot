@@ -13,9 +13,22 @@ from handlers.sections.menu import handle_menu
 # === 🧼 /start: Wipe Confirmed ===
 async def start_wipe_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("🧼 Start wipe confirmed")
+
+    chat_id = update.effective_chat.id
+
+    # Delete triggering message
+    try:
+        if update.callback_query:
+            await update.callback_query.message.delete()
+        elif update.message:
+            await update.message.delete()
+    except Exception as e:
+        print(f"⚠️ Failed to delete /start message: {e}")
+
     await delete_all_bot_messages(update, context)
     reset_menu_context(context)
     await _reset_user_state(update, context, reset_start=True)
+
     await send_start_welcome_screen(update, context)
 
 
@@ -52,24 +65,32 @@ async def ask_restart_confirmation(update: Update, context: ContextTypes.DEFAULT
 async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ Restart confirmed")
 
+    chat_id = update.effective_chat.id
+
+    # Step 1: Try deleting the message that triggered the callback or slash
     try:
         if update.callback_query:
             await update.callback_query.message.delete()
-        if update.message:
+        elif update.message:
             await update.message.delete()
     except Exception as e:
-        print(f"⚠️ Failed to delete restart messages: {e}")
+        print(f"⚠️ Failed to delete /restart message: {e}")
 
+    # Step 2: Wipe all previously tracked messages
     await delete_all_bot_messages(update, context)
     reset_menu_context(context)
     await _reset_user_state(update, context, reset_start=True)
 
+    # Step 3: Send the final confirmation message
     sent = await context.bot.send_message(
-        chat_id=update.effective_chat.id,
+        chat_id=chat_id,
         text="🔁 Restart complete.\nUse /start to begin fresh or /menu to resume.",
         parse_mode="HTML"
     )
-    track_bot_message(context, sent)
+
+    # Step 4: Track only the final confirmation message
+    context.user_data["all_bot_msg_ids"] = [sent.message_id]
+    print(f"📌 Tracked only restart confirmation message: {sent.message_id}")
 
 
 # === ❌ /restart: Cancelled ===
@@ -83,14 +104,26 @@ async def restart_cancelled(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("🔓 Logout command triggered")
 
+    chat_id = update.effective_chat.id
+
+    # Delete triggering message
+    try:
+        if update.message:
+            await update.message.delete()
+    except Exception as e:
+        print(f"⚠️ Failed to delete /logout command message: {e}")
+
     reset_menu_context(context)
 
     sent = await context.bot.send_message(
-        chat_id=update.effective_chat.id,
+        chat_id=chat_id,
         text="👋 You’ve been logged out of the current menu session.\nUse /menu to resume.",
         parse_mode="HTML"
     )
-    track_bot_message(context, sent)
+
+    # Only track logout message now
+    context.user_data["all_bot_msg_ids"] = [sent.message_id]
+    print(f"📌 Tracked logout confirmation message: {sent.message_id}")
 
 
 # === 📜 /commands Inline Button ===
