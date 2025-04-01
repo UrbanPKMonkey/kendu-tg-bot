@@ -31,8 +31,19 @@ from handlers.sections.follow import handle_follow_links
 async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, data_override=None, message_override=None):
     query = update.callback_query if update else None
     data = query.data if query else data_override
-    message = query.message if query else message_override
-    chat_id = message.chat_id
+
+    if query:
+        message = query.message
+        chat_id = message.chat_id
+    elif message_override:
+        message = message_override
+        chat_id = message.chat_id
+    elif update.message:
+        message = update.message
+        chat_id = update.message.chat_id
+    else:
+        message = None
+        chat_id = None
 
     if query:
         await query.answer()
