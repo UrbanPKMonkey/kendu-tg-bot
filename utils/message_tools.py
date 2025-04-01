@@ -135,5 +135,33 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
         reply_markup=reply_markup
     )
 
+async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
+    print(f"🔁 simulate_button triggered with data: {data}")
+
+    try:
+        # Robustly extract the message context
+        message = None
+        if update:
+            if update.message:
+                message = update.message
+            elif update.callback_query:
+                message = update.callback_query.message
+
+        await handle_button(
+            update=None,
+            context=context,
+            data_override=data,
+            message_override=message
+        )
+
+        # Clean up the slash command message after handling
+        if update and update.message:
+            try:
+                await update.message.delete()
+            except Exception as e:
+                print(f"⚠️ Failed to delete slash command message: {e}")
+
+    except Exception as e:
+        print(f"❌ simulate_button error for '{data}': {e}")
 
 
