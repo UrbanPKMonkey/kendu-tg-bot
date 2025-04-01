@@ -18,7 +18,7 @@ handlers/
 
 # handlers/callbacks.py
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from telegram import Update
 from telegram.ext import ContextTypes
 
 from handlers.sections.menu import handle_menu
@@ -30,58 +30,40 @@ from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
 
-from utils.message_tools import smart_send_or_edit
 
-
-async def handle_button(
-    update: Update = None,
-    context: ContextTypes.DEFAULT_TYPE = None,
-    data_override=None,
-    message_override: Message = None
-):
+async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data_override=None):
     query = update.callback_query if update else None
     data = query.data if query else data_override
-    message = query.message if query else message_override
-
-    # Fallback handling for chat_id
-    chat_id = None
-    if message:
-        chat_id = message.chat_id
-    elif update and update.effective_chat:
-        chat_id = update.effective_chat.id
-    elif message_override:
-        chat_id = message_override.chat_id
-
-    if not data or not chat_id:
-        print("⚠️ Missing data or chat_id in handle_button. Aborting.")
-        return
 
     if query:
         await query.answer()
 
-    # Routing
+    # Route to the appropriate section
     if data == "menu":
-        await handle_menu(update=update, context=context, chat_id=chat_id, message=message)
+        await handle_menu(update, context)
     elif data == "about":
-        await handle_about(context, chat_id, message)
+        await handle_about(update, context)
     elif data == "ecosystem":
-        await handle_ecosystem(context, chat_id)
+        await handle_ecosystem(update, context)
     elif data.startswith("kendu_"):
-        await handle_ecosystem_item(context, chat_id, data)
+        await handle_ecosystem_item(update, context, data)
     elif data == "buy_kendu":
         await handle_buy_kendu(update, context)
     elif data.startswith("buy_") or data.startswith("how_to_"):
         await handle_buy_chain(update, context, data)
     elif data == "faq":
-        await handle_faq_menu(context, chat_id)
+        await handle_faq_menu(update, context)
     elif data.startswith("faq_"):
-        await handle_faq_answer(context, chat_id, data)
+        await handle_faq_answer(update, context, data)
     elif data == "contract_addresses":
-        await handle_contract_addresses(context, chat_id, message)
+        await handle_contract_addresses(update, context)
     elif data == "follow_links":
-        await handle_follow_links(context, chat_id, message)
+        await handle_follow_links(update, context)
     else:
         # Fallback
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        from utils.message_tools import smart_send_or_edit
+
         text = "⚠️ Unknown command. Please use /menu to get back to the main screen."
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🤖 Back to Menu", callback_data="menu")]
@@ -90,6 +72,5 @@ async def handle_button(
             query=query,
             context=context,
             new_text=text,
-            reply_markup=reply_markup,
-            message_override=message_override
+            reply_markup=reply_markup
         )

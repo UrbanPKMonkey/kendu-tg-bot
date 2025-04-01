@@ -135,11 +135,5 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
         reply_markup=reply_markup
     )
 
-async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
-    print(f"🔁 simulate_button triggered with data: {data}")
-    try:
-        await handle_button(update=update, context=context, data_override=data)
-    except Exception as e:
-        print(f"❌ simulate_button error for '{data}': {e}")
 
 
