@@ -57,6 +57,8 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
         await start_continue(update, context)
     elif data == "restart_confirmed":
         await restart_confirmed(update, context)
+    elif data == "restart_cancelled":
+        await restart_cancelled(update, context)
     else:
         # ❌ Fallback for unknown buttons
         text = "⚠️ Unknown command. Please use /menu to get back to the main screen."
@@ -88,11 +90,16 @@ async def start_continue(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # === 🔁 /restart: Confirmed Reset ===
 async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("🔁 Restart confirmed")
+    print("✅ Restart confirmed")
     await delete_all_bot_messages(update, context)
     await _reset_user_state(update, context, reset_start=True)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="🔁 Restarted. Use /start to begin fresh or /menu to resume.",
+        text="🔁 Restart complete.\nUse /start to begin fresh or /menu to resume.",
         parse_mode="HTML"
     )
+
+async def restart_cancelled(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("❌ Restart cancelled")
+    await _reset_user_state(update, context, reset_start=False)
+    await handle_button(update, context, data_override="menu")
