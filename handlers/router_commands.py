@@ -1,4 +1,5 @@
 from telegram.ext import CommandHandler
+from core.message_tracker import wrap_command_handler  # 🧠 Unified handler wrapper
 
 from handlers.sections.menu import handle_menu
 from handlers.sections.about import handle_about
@@ -13,14 +14,19 @@ from handlers.menu_actions import handle_start, logout, ask_restart_confirmation
 
 
 def register_slash_commands(bot_app):
-    """Register all slash commands with the bot."""
-    bot_app.add_handler(CommandHandler("start", handle_start))
-    bot_app.add_handler(CommandHandler("menu", handle_menu))
-    bot_app.add_handler(CommandHandler("about", handle_about))
-    bot_app.add_handler(CommandHandler("eco", handle_ecosystem))
-    bot_app.add_handler(CommandHandler("buykendu", handle_buy_kendu))
-    bot_app.add_handler(CommandHandler("contracts", handle_contract_addresses))
-    bot_app.add_handler(CommandHandler("faq", handle_faq_menu))
-    bot_app.add_handler(CommandHandler("follow", handle_follow_links))
-    bot_app.add_handler(CommandHandler("logout", logout))
-    bot_app.add_handler(CommandHandler("restart", ask_restart_confirmation))
+    """Register all slash commands with the bot (with cleanup)."""
+    commands = [
+        ("start", handle_start),
+        ("menu", handle_menu),
+        ("about", handle_about),
+        ("eco", handle_ecosystem),
+        ("buykendu", handle_buy_kendu),
+        ("contracts", handle_contract_addresses),
+        ("faq", handle_faq_menu),
+        ("follow", handle_follow_links),
+        ("logout", logout),
+        ("restart", ask_restart_confirmation),
+    ]
+
+    for cmd, handler in commands:
+        bot_app.add_handler(CommandHandler(cmd, wrap_command_handler(handler)))
