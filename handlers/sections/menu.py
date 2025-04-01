@@ -1,60 +1,44 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
+
+from core.menu_state import get_tracked_menu_state
 from ui.menu_renderer import menu_renderer
 
-# List of commands you want to display in the menu
-ALL_COMMANDS = [
-    "/start", "/menu", "/about", "/eco", "/buykendu", "/contracts", "/faq", "/follow", "/logout", "/restart"
-]
 
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handles the /menu command or Menu button tap."""
+    # 🧠 Prevent duplicate renders if the menu is already shown
+    old_msg_ids, old_type = get_tracked_menu_state(context)
+    if old_type == "text" and old_msg_ids:
+        print("⏭️ Menu already active — skipping re-render")
+        return
+
     print("📲 /menu or Menu button tapped — rendering main menu")
 
     text = (
-        "🤖 <b>Kendu Main Menu</b>\n\n"
-        "Tap an option below to explore:"
+        "<b>Welcome to the Kendu Ecosystem Menu</b>\n\n"
+        "Explore the decentralized world of Kendu Inu:\n\n"
+        "🧠 /about — What is Kendu?\n"
+        "🌱 /eco — Our Ecosystem\n"
+        "💰 /buykendu — How to Buy\n"
+        "📄 /contracts — Contract Addresses\n"
+        "❓ /faq — Questions & Answers\n"
+        "🌐 /follow — Socials & Links\n\n"
+        "Choose an option below 👇"
     )
 
-    # Define menu buttons
-    buttons = [
+    reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🧠 About", callback_data="about")],
-        [InlineKeyboardButton("🌐 Ecosystem", callback_data="ecosystem")],
+        [InlineKeyboardButton("🌱 Ecosystem", callback_data="ecosystem")],
         [InlineKeyboardButton("💰 Buy Kendu", callback_data="buy_kendu")],
+        [InlineKeyboardButton("📄 Contract Addresses", callback_data="contract_addresses")],
         [InlineKeyboardButton("❓ FAQ", callback_data="faq")],
-        [InlineKeyboardButton("🧾 Contract Addresses", callback_data="contract_addresses")],
-        [InlineKeyboardButton("🔗 Follow", callback_data="follow_links")],
-        [InlineKeyboardButton("💬 /commands", callback_data="show_commands")]  # New button for commands
-    ]
+        [InlineKeyboardButton("🌐 Follow Links", callback_data="follow_links")]
+    ])
 
-    # Create inline keyboard with buttons
-    reply_markup = InlineKeyboardMarkup(buttons)
-
-    # Send the main menu
     await menu_renderer(
         update=update,
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup
-    )
-
-
-async def handle_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handles the /commands callback and shows all available commands."""
-    print("📜 /commands tapped — showing all available commands")
-
-    # Create buttons for all commands
-    buttons = [[InlineKeyboardButton(cmd, callback_data=cmd)] for cmd in ALL_COMMANDS]
-
-    # Create the reply markup with command buttons
-    reply_markup = InlineKeyboardMarkup(buttons)
-
-    # Send the message with all commands
-    await menu_renderer(
-        update=update,
-        context=context,
-        msg_type="text",
-        text="Here are all the available commands:",
         reply_markup=reply_markup
     )

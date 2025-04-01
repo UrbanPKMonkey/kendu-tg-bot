@@ -1,8 +1,15 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+
+from core.menu_state import get_tracked_menu_state
 from ui.menu_renderer import menu_renderer
 
 async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    old_msg_ids, old_type = get_tracked_menu_state(context)
+    if old_type == "text" and old_msg_ids:
+        print("⏭️ About already active — skipping re-render")
+        return
+
     print("📖 About selected — showing Kendu story")
 
     text = (
@@ -47,7 +54,7 @@ async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         "🪖 <b>We don’t gamble. We work!</b>"
     )
-
+    
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])

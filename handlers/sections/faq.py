@@ -1,11 +1,17 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+
+from core.menu_state import get_tracked_menu_state
 from ui.menu_renderer import menu_renderer
 
 
 # ===== 🤔 FAQ Menu =====
 async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Displays the FAQ category menu with list of common questions."""
+    old_msg_ids, old_type = get_tracked_menu_state(context)
+    if old_type == "text" and old_msg_ids:
+        print("⏭️ FAQ menu already active — skipping re-render")
+        return
+
     print("📚 Showing FAQ menu")
 
     text = (
@@ -29,8 +35,7 @@ async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup,
-        menu_key="faq_menu"
+        reply_markup=reply_markup
     )
 
 

@@ -1,9 +1,15 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from ui.menu_renderer import menu_renderer
+from core.menu_state import get_tracked_menu_state
 
 # ===== Buy Kendu Menu =====
 async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    old_msg_ids, old_type = get_tracked_menu_state(context)
+    if old_type == "text" and old_msg_ids:
+        print("⏭️ Buy menu already active — skipping re-render")
+        return
+
     print("🛒 Buy menu opened")
 
     text = (
@@ -29,14 +35,8 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    await menu_renderer(
-        update=update,
-        context=context,
-        msg_type="text",
-        text=text,
-        reply_markup=reply_markup
-    )
-    return
+    await menu_renderer(update, context, msg_type="text", text=text, reply_markup=reply_markup)
+
 
 
 # ===== Buy on Individual Chains =====
@@ -99,11 +99,4 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
         [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
     ])
 
-    await menu_renderer(
-        update=update,
-        context=context,
-        msg_type="text",
-        text=text,
-        reply_markup=reply_markup
-    )
-    return
+    await menu_renderer(update, context, msg_type="text", text=text, reply_markup=reply_markup)

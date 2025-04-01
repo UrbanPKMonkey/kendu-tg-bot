@@ -1,10 +1,15 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from ui.menu_renderer import menu_renderer
+from core.menu_state import get_tracked_menu_state
 
 
 async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Displays Kendu's official social links and ecosystem connections."""
+    old_msg_ids, old_type = get_tracked_menu_state(context)
+    if old_type == "text" and old_msg_ids:
+        print("⏭️ Follow links already active — skipping re-render")
+        return
+
     print("🔗 Showing Kendu follow links")
 
     text = "🔗 <b>Follow Kendu</b>\n\nExplore our ecosystem and stay connected 👇"
@@ -25,7 +30,6 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    # Send the follow links menu
     await menu_renderer(
         update=update,
         context=context,
