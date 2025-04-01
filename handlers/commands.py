@@ -1,7 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.callbacks import handle_button
-from utils.message_tools import delete_and_send_new, simulate_button
+from utils.message_tools import delete_and_send_new
+from utils.simulate import simulate_button
 
 # ✅ Simulates a button tap from a slash command
 async def simulate_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data: str):
