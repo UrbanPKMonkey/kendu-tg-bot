@@ -16,7 +16,9 @@ handlers/
     └── follow.py         # Handles "follow_links"
 """
 
-from telegram import Update
+# handlers/callbacks.py
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from telegram.ext import ContextTypes
 
 from handlers.sections.menu import handle_menu
@@ -24,31 +26,40 @@ from handlers.sections.about import handle_about
 from handlers.sections.ecosystem import handle_ecosystem
 from handlers.sections.ecosystem_items import handle_ecosystem_item
 from handlers.sections.buy import handle_buy_kendu, handle_buy_chain
-from handlers.sections.faq import handle_faq_answer, handle_faq_menu
+from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
 
-async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYPE = None, data_override=None, message_override=None):
+from utils.message_tools import smart_send_or_edit
+
+
+async def handle_button(
+    update: Update = None,
+    context: ContextTypes.DEFAULT_TYPE = None,
+    data_override=None,
+    message_override: Message = None
+):
     query = update.callback_query if update else None
     data = query.data if query else data_override
+    message = query.message if query else message_override
 
-    if query:
-        message = query.message
+    # Fallback handling for chat_id
+    chat_id = None
+    if message:
         chat_id = message.chat_id
+    elif update and update.effective_chat:
+        chat_id = update.effective_chat.id
     elif message_override:
-        message = message_override
-        chat_id = message.chat_id
-    elif update.message:
-        message = update.message
-        chat_id = update.message.chat_id
-    else:
-        message = None
-        chat_id = None
+        chat_id = message_override.chat_id
+
+    if not data or not chat_id:
+        print("⚠️ Missing data or chat_id in handle_button. Aborting.")
+        return
 
     if query:
         await query.answer()
 
-    # Route to the appropriate section
+    # Routing
     if data == "menu":
         await handle_menu(update=update, context=context, chat_id=chat_id, message=message)
     elif data == "about":
@@ -71,9 +82,6 @@ async def handle_button(update: Update = None, context: ContextTypes.DEFAULT_TYP
         await handle_follow_links(context, chat_id, message)
     else:
         # Fallback
-        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-        from utils.message_tools import smart_send_or_edit
-
         text = "⚠️ Unknown command. Please use /menu to get back to the main screen."
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🤖 Back to Menu", callback_data="menu")]
