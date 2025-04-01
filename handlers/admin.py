@@ -3,7 +3,7 @@
 from telegram import Update, BotCommand
 from telegram.ext import ContextTypes
 
-from handlers.router_commands import COMMAND_DEFINITIONS
+from core.commands_config import COMMAND_DEFINITIONS  # ✅ avoids circular import
 
 # === 🔄 Refresh Telegram Slash Menu Commands ===
 async def refresh_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
