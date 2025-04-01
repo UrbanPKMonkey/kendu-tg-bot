@@ -19,7 +19,7 @@ from handlers.sections.follow import handle_follow_links
 from handlers.sections.start import send_start_welcome_screen  # ✅ moved here
 
 # 🔁 Reset helper
-from handlers.commands import _reset_user_state
+from utils.user_state import _reset_user_state
 
 
 # === 🧠 Central Callback Router ===
