@@ -139,9 +139,7 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="👋 Welcome back!
-
-Would you like to start fresh or continue?",
+            text="👋 Welcome back!\n\nWould you like to start fresh or continue?",
             reply_markup=reply_markup,
             parse_mode="HTML"
         )
