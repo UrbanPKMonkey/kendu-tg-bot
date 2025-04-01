@@ -22,8 +22,8 @@ ROUTES = {
 # ===== /start handler (welcome image and context reset) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
-    
-    # Reset the user's menu state and prevent deletion of /start message
+
+    # Reset all previous menu state (but keep /start image alive)
     await _reset_user_state(update, context)
 
     caption = (
@@ -54,11 +54,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Made with ❤️ by the Kendu Community."
     )
 
-    reply_markup = InlineKeyboardMarkup([ 
+    reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🤖 Menu", callback_data="menu")]
     ])
 
-    # Send /start message and save message ID to context
+    # Send welcome photo using menu handler
     sent = await menu_handler(
         update=update,
         context=context,
@@ -68,11 +68,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-    # Save the /start message ID to ensure it is not deleted unless explicitly reset
+    # Track the /start message to protect it from deletion
     context.user_data["menu_start_msg_id"] = sent.message_id
 
 
-# ===== Unified Slash Command Routing =====
+# ===== Slash Command Routing =====
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "menu")
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "about")
 async def eco(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "eco")
@@ -81,7 +81,7 @@ async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE): await _
 async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "faq")
 async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "follow")
 
-# ===== Command Router Core =====
+# ===== Router Core =====
 async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd_key: str):
     print(f"📩 /{cmd_key} command received")
 
@@ -89,7 +89,8 @@ async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd
     if callback_data:
         await handle_button(update, context, data_override=callback_data)
 
-# ===== Logout + Restart =====
+
+# ===== Logout & Restart Commands =====
 async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("👋 /logout received")
     await _reset_user_state(update, context, reset_start=False)
@@ -108,11 +109,11 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-# ===== Shared Cleanup for All Resets =====
+
+# ===== Shared State Cleanup =====
 async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, reset_start=False):
     """
-    This function is responsible for clearing the user's state and removing tracked menu messages.
-    If reset_start=True, it will ensure the /start message is not deleted unless triggered by /start or /restart.
+    Clears tracked menu messages. If reset_start is True, also allows deletion of /start.
     """
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
@@ -122,11 +123,10 @@ async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         return
 
     old_msg_ids, _ = get_tracked_menu_state(context)
+    preserved_id = context.user_data.get("menu_start_msg_id")
 
-    # Do not delete /start message unless reset_start is True
     for msg_id in old_msg_ids:
-        # Skip deleting /start message unless it's a reset or /restart request
-        if reset_start and msg_id != context.user_data.get("menu_start_msg_id"):
+        if reset_start or msg_id != preserved_id:
             await safe_delete_message(context, chat_id, msg_id)
 
     reset_menu_context(context)

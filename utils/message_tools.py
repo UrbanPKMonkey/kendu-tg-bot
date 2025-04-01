@@ -11,10 +11,10 @@ from PIL import Image
 
 
 # === Unified Send/Track Helper ===
-def _track_menu_message(context, sent, msg_type):
+def _track_menu_message(context, sent: Message, msg_type: str):
     context.user_data["menu_msg_ids"] = [sent.message_id]
     context.user_data["menu_msg_type"] = msg_type
-    return sent
+    return sent  # explicitly returns Message object
 
 
 # === Clean Smart Senders ===
@@ -107,6 +107,7 @@ async def smart_send_or_edit(
         parse_mode=parse_mode
     )
     _track_menu_message(context, sent, "text")
+    return sent  # return explicitly for clarity
 
 
 async def delete_and_send_new(update, context, text, reply_markup=None, parse_mode="HTML"):
@@ -118,12 +119,13 @@ async def delete_and_send_new(update, context, text, reply_markup=None, parse_mo
     except Exception as e:
         print(f"⚠️ Failed to delete message: {e}")
 
-    return await context.bot.send_message(
+    sent = await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
         reply_markup=reply_markup,
         parse_mode=parse_mode
     )
+    return sent  # explicitly return Message object
 
 
 # === Visual Tools ===
@@ -170,6 +172,7 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
         parse_mode="HTML",
         reply_markup=reply_markup
     )
+
 
 # === Clear Menus ===
 
