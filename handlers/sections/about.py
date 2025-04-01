@@ -3,6 +3,8 @@ from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
 async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("📖 About selected — showing Kendu story")
+
     text = (
         "🧠 <b>About Kendu</b>\n\n"
         "Kendu is a movement that empowers you to turn your life goals into reality.\n"

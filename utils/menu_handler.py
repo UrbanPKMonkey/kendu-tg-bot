@@ -6,6 +6,12 @@ from utils.message_tools import (
     send_tracked_menu_video,
     send_tracked_menu_document,
 )
+from utils.menu_tools import (
+    get_tracked_menu_state,
+    reset_menu_context,
+    set_tracked_menu_state,
+    safe_delete_message,
+)
 
 async def menu_handler(
     update: Update,
@@ -18,29 +24,27 @@ async def menu_handler(
     document=None
 ):
     """
-    Smart menu rendering + cleanup for text, photo, video, and document.
-    Tracks message IDs to prevent clutter and ensure clean transitions.
-    Returns True if no new message is needed (duplicate), else False.
+    Smart menu rendering + cleanup for text, photo, video, or document.
+    Prevents clutter and ensures only one active menu is visible.
+    Returns True if existing menu can be edited (no new one needed).
     """
 
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
-
     if not chat_id:
-        print("⚠️ No chat_id found. Skipping menu handling.")
+        print("⚠️ No chat_id found. Skipping menu handler.")
         return True
 
-    # Delete original slash command
+    # 🧹 Delete original slash command message
     if update.message:
         try:
             await update.message.delete()
         except Exception as e:
             print(f"⚠️ Failed to delete slash command: {e}")
 
-    old_msg_ids = context.user_data.get("menu_msg_ids", [])
-    old_type = context.user_data.get("menu_msg_type", None)
+    old_msg_ids, old_type = get_tracked_menu_state(context)
 
-    # ✅ Attempt edit if same type
+    # ✅ Try editing inline buttons if type is unchanged
     if old_msg_ids and old_type == msg_type:
         try:
             await context.bot.edit_message_reply_markup(
@@ -48,25 +52,31 @@ async def menu_handler(
                 message_id=old_msg_ids[-1],
                 reply_markup=reply_markup
             )
+            print(f"♻️ Reused existing menu message (id={old_msg_ids[-1]})")
             return True
         except Exception:
-            print("⚠️ Old message not editable, sending new.")
+            print("⚠️ Could not edit existing menu — deleting and sending new.")
 
-    # ❌ Delete all old tracked messages
+    # ❌ Delete all old menu messages
     for msg_id in old_msg_ids:
-        try:
-            await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
-        except Exception:
-            pass  # Already deleted
+        await safe_delete_message(context, chat_id, msg_id)
 
-    # 🚀 Send new menu by type
+    # 🔄 Reset and track fresh menu state
+    reset_menu_context(context)
+
+    # 🚀 Send new menu by content type
     if msg_type == "text" and text:
-        await send_tracked_menu_text(context, chat_id, text, reply_markup)
+        sent = await send_tracked_menu_text(context, chat_id, text, reply_markup)
     elif msg_type == "photo" and photo and text:
-        await send_tracked_menu_photo(context, chat_id, photo, text, reply_markup)
+        sent = await send_tracked_menu_photo(context, chat_id, photo, text, reply_markup)
     elif msg_type == "video" and video and text:
-        await send_tracked_menu_video(context, chat_id, video, text, reply_markup)
+        sent = await send_tracked_menu_video(context, chat_id, video, text, reply_markup)
     elif msg_type == "document" and document and text:
-        await send_tracked_menu_document(context, chat_id, document, text, reply_markup)
+        sent = await send_tracked_menu_document(context, chat_id, document, text, reply_markup)
+    else:
+        print("⚠️ No valid menu content provided.")
+        return True
 
+    # ✅ Track newly sent message
+    set_tracked_menu_state(context, sent.message_id, msg_type)
     return False

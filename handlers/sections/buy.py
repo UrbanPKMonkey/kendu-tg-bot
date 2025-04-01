@@ -2,8 +2,10 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.menu_handler import menu_handler
 
-
+# ===== Buy Kendu Menu =====
 async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🛒 Buy menu opened")
+
     text = (
         "💰 <b>Buy $KENDU</b>\n\n"
         "Kendu is available on <b>Ethereum</b>, <b>Solana</b>, and <b>Base</b>.\n"
@@ -36,7 +38,10 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+# ===== Buy on Individual Chains =====
 async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, chain: str):
+    print(f"🧾 Showing DEX instructions for: {chain.upper()}")
+
     chains = {
         "buy_eth": {
             "title": "⚫ <b>Buy on Ethereum (ETH)</b>",
@@ -76,12 +81,13 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
 
     data = chains.get(chain)
     if not data:
+        print("❌ Invalid chain in handle_buy_chain")
         return
 
     text = (
         f"{data['title']}\n\n"
         "<b>Why buy here?</b>\n" +
-        "\n".join(f"• {line}" for line in data["why"]) +
+        "\n".join(f"• {reason}" for reason in data["why"]) +
         f"\n\n<b>Recommended DEX:</b> {data['dex']}\n\n"
         f"<b>Contract Address:</b>\n<code>{data['contract']}</code>\n\n"
         "⚠️ Always verify the contract before trading."

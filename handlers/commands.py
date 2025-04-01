@@ -8,7 +8,7 @@ from utils.menu_tools import (
     safe_delete_message,
 )
 
-# ===== Route map for slash commands → callback buttons =====
+# ===== Route map for slash commands → callback data =====
 ROUTES = {
     "menu": "menu",
     "about": "about",
@@ -19,7 +19,7 @@ ROUTES = {
     "follow": "follow_links",
 }
 
-# ===== /start handler (welcome image with context cleanup) =====
+# ===== /start command (welcome image and context reset) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
     await _reset_user_state(update, context)
@@ -65,29 +65,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-# ===== Slash command routing =====
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _route_command(update, context, "menu")
+# ===== Unified Slash Command Routing =====
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "menu")
+async def about(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "about")
+async def eco(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "eco")
+async def buykendu(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "buykendu")
+async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "contracts")
+async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "faq")
+async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE): await _route_command(update, context, "follow")
 
-async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _route_command(update, context, "about")
-
-async def eco(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _route_command(update, context, "eco")
-
-async def buykendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _route_command(update, context, "buykendu")
-
-async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _route_command(update, context, "contracts")
-
-async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _route_command(update, context, "faq")
-
-async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await _route_command(update, context, "follow")
-
-# ===== Command router logic =====
+# ===== Command Router Core =====
 async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd_key: str):
     print(f"📩 /{cmd_key} command received")
 
@@ -98,7 +85,7 @@ async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd
     if callback_data:
         await handle_button(update, context, data_override=callback_data)
 
-# ===== /logout and /restart handlers =====
+# ===== Logout + Restart =====
 async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("👋 /logout received")
     await _reset_user_state(update, context)
@@ -117,7 +104,7 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-# ===== Shared cleanup for tracked menu state =====
+# ===== Shared Cleanup for All Resets =====
 async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
