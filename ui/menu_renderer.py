@@ -1,9 +1,8 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from core.message_tracker import track_menu_message, safe_delete_message
-from core.menu_state import get_tracked_menu_state
-
+from core.message_tracker import track_menu_message  # ✅ Only this from message_tracker
+from core.menu_state import get_tracked_menu_state, safe_delete_message  # ✅ Correct source
 
 async def menu_renderer(
     update: Update,
