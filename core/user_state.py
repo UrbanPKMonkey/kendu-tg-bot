@@ -2,6 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from core.menu_state import get_tracked_menu_state, reset_menu_context, safe_delete_message
 
+
 async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, reset_start: bool = False):
     """
     Resets the user's menu/message state.
@@ -18,16 +19,23 @@ async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         print("⚠️ No chat_id found during reset")
         return
 
-    # ✅ Corrected unpacking: 3 values returned
+    # Retrieve the list of tracked messages (handle None safely)
     old_msg_ids, _, _ = get_tracked_menu_state(context)
+    old_msg_ids = old_msg_ids or []
+
     start_msg_id = context.user_data.get("menu_start_msg_id")
     deleted = []
+    skipped = []
 
     # Iterate over the tracked messages and delete them
     for msg_id in old_msg_ids:
         if reset_start or msg_id != start_msg_id:
             await safe_delete_message(context, chat_id, msg_id)
             deleted.append(msg_id)
+            print(f"🧹 Deleted message ID: {msg_id}")
+        else:
+            skipped.append(msg_id)
+            print(f"✅ Preserved start message ID: {msg_id}")
 
     # Reset all menu state and clear user_data related to menu
     reset_menu_context(context)
@@ -35,4 +43,4 @@ async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     if reset_start:
         context.user_data["menu_start_msg_id"] = None
 
-    print(f"🧹 Reset user state. Deleted {len(deleted)} messages. Reset start: {reset_start}")
+    print(f"🧼 Reset user state. Deleted {len(deleted)} messages, skipped {len(skipped)}. Reset start: {reset_start}")
