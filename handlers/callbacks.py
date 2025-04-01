@@ -152,5 +152,3 @@ async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYP
         reply_markup=reply_markup
     )
 
-# Register this handler in your bot setup
-bot_app.add_handler(CallbackQueryHandler(handle_show_commands, pattern="^show_commands$"))    

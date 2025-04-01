@@ -11,7 +11,7 @@ from handlers.commands import (
     start, menu, about, eco, buykendu, contracts, faq, follow,
     logout, restart
 )
-from handlers.callbacks import handle_button
+from handlers.callbacks import handle_button, handle_show_commands
 
 # 🔐 Load environment variables
 load_dotenv()
