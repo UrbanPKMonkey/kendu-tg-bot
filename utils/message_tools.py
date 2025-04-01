@@ -9,12 +9,13 @@ from io import BytesIO
 import requests
 from PIL import Image
 
-
 # === Unified Send/Track Helper ===
+
 def _track_menu_message(context, sent: Message, msg_type: str):
+    """Tracks the sent message in user_data for later deletion/editing."""
     context.user_data["menu_msg_ids"] = [sent.message_id]
     context.user_data["menu_msg_type"] = msg_type
-    return sent  # explicitly returns Message object
+    return sent  # Always return the message
 
 
 # === Clean Smart Senders ===
@@ -72,6 +73,7 @@ async def smart_send_or_edit(
     parse_mode: str = "HTML",
     message_override: Message = None
 ):
+    """Edits previous tracked message if possible, otherwise sends new."""
     message = query.message if query else message_override
     chat_id = message.chat_id if message else None
     old_msg_id = context.user_data.get("menu_msg_id")
@@ -106,11 +108,11 @@ async def smart_send_or_edit(
         reply_markup=reply_markup,
         parse_mode=parse_mode
     )
-    _track_menu_message(context, sent, "text")
-    return sent  # return explicitly for clarity
+    return _track_menu_message(context, sent, "text")
 
 
 async def delete_and_send_new(update, context, text, reply_markup=None, parse_mode="HTML"):
+    """Deletes the triggering message and sends a fresh new message."""
     try:
         if update.message:
             await update.message.delete()
@@ -125,12 +127,13 @@ async def delete_and_send_new(update, context, text, reply_markup=None, parse_mo
         reply_markup=reply_markup,
         parse_mode=parse_mode
     )
-    return sent  # explicitly return Message object
+    return sent
 
 
 # === Visual Tools ===
 
 async def add_black_background_to_image(image_url: str) -> BytesIO:
+    """Downloads image from URL, adds black background, and returns as BytesIO."""
     response = requests.get(image_url)
     original = Image.open(BytesIO(response.content)).convert("RGBA")
 
@@ -147,6 +150,7 @@ async def add_black_background_to_image(image_url: str) -> BytesIO:
 # === Static Menus ===
 
 def get_contracts_text_and_markup():
+    """Returns static contract address menu with markup."""
     text = (
         "🧾 <b>Contract Addresses</b>\n\n"
         "⚫ <b>Ethereum (ETH):</b>\n"
@@ -165,6 +169,7 @@ def get_contracts_text_and_markup():
 
 
 async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
+    """Edits an existing message by message_id."""
     await context.bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
@@ -177,10 +182,7 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
 # === Clear Menus ===
 
 async def clear_all_menus(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
-    """
-    Deletes all tracked menu messages across any type (text, photo, etc.).
-    Useful for logout, restart, or global cleanup.
-    """
+    """Deletes all tracked menu messages from user_data."""
     old_msg_ids = context.user_data.get("menu_msg_ids", [])
 
     for msg_id in old_msg_ids:
@@ -189,6 +191,19 @@ async def clear_all_menus(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
         except Exception:
             pass
 
-    # Reset user_data menu tracking
     context.user_data["menu_msg_ids"] = []
     context.user_data["menu_msg_type"] = None
+
+
+# === Full Wipe Utility ===
+
+async def delete_all_bot_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Deletes up to 100 of the bot’s own messages from the chat."""
+    chat_id = update.effective_chat.id
+
+    async for message in context.bot.get_chat_history(chat_id=chat_id, limit=100):
+        if message.from_user and message.from_user.id == context.bot.id:
+            try:
+                await context.bot.delete_message(chat_id, message.message_id)
+            except Exception:
+                pass  # already gone or can't delete
