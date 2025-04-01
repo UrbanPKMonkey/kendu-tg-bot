@@ -6,10 +6,11 @@ def reset_menu_context(context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("menu_msg_ids", None)
     print("🔁 Menu context reset")
 
-def get_tracked_menu_state(context: ContextTypes.DEFAULT_TYPE):
+def get_tracked_menu_state(context):
     return (
-        context.user_data.get("menu_msg_ids", []),
-        context.user_data.get("menu_msg_type", "text")
+        context.user_data.get("menu_msg_ids"),
+        context.user_data.get("menu_msg_type"),
+        context.user_data.get("menu_section")
     )
 
 def set_tracked_menu_state(context: ContextTypes.DEFAULT_TYPE, msg_id: int, msg_type: str = "text"):
@@ -40,24 +41,22 @@ async def delete_all_bot_messages(update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["menu_msg_ids"] = []
     context.user_data["menu_msg_type"] = None
 
-async def should_skip_section_render(update, context, section_type: str = "text") -> bool:
-    """
-    🧠 Deletes slash command message if present and checks if the same type of section is already visible.
-    Returns True if the section should not re-render (e.g., to avoid flicker).
-
-    Supported section_type: "text", "photo", "video", "document", "animation"
-    """
-    # 🧼 Step 1: Delete slash command message
+async def should_skip_section_render(update, context, section_type: str = "text", section_key: str = None) -> bool:
     try:
         if update.message:
             await update.message.delete()
     except Exception as e:
         print(f"⚠️ Failed to delete slash command: {e}")
 
-    # 🔁 Step 2: Check tracked menu state
-    old_msg_ids, old_type = get_tracked_menu_state(context)
-    if old_type == section_type and old_msg_ids:
-        print(f"⏭️ {section_type.capitalize()} section already active — skipping re-render")
+    old_msg_ids, old_type, old_section = get_tracked_menu_state(context)
+
+    if (
+        old_type == section_type
+        and old_msg_ids
+        and section_key
+        and old_section == section_key
+    ):
+        print(f"⏭️ {section_key.upper()} already active — skipping re-render")
         return True
 
-    return False   
+    return False 

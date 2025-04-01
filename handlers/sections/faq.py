@@ -7,7 +7,7 @@ from ui.menu_renderer import menu_renderer
 
 # ===== 🤔 FAQ Menu =====
 async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if await should_skip_section_render(update, context, section_type="text"):
+    if await should_skip_section_render(update, context, section_type="text", section_key="faq"):
         return
 
     print("📚 Showing FAQ menu")
@@ -98,5 +98,6 @@ async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        section_key="faq"
     )

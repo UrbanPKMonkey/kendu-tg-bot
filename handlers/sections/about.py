@@ -5,7 +5,7 @@ from core.menu_state import should_skip_section_render
 from ui.menu_renderer import menu_renderer
 
 async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if await should_skip_section_render(update, context, section_type="text"):
+    if await should_skip_section_render(update, context, section_type="text", section_key="about"):
         return
 
     print("📖 About selected — showing Kendu story")
@@ -62,5 +62,6 @@ async def handle_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        section_key="about"
     )

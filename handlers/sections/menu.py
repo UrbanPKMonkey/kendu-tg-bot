@@ -6,7 +6,7 @@ from ui.menu_renderer import menu_renderer
 
 
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if await should_skip_section_render(update, context, section_type="text"):
+    if await should_skip_section_render(update, context, section_type="text", section_key="menu"):
         return
 
     print("📲 /menu or Menu button tapped — rendering main menu")
@@ -37,5 +37,6 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        section_key="menu"
     )

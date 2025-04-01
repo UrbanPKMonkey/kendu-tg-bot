@@ -73,8 +73,10 @@ async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TY
     await menu_renderer(
         update=update,
         context=context,
-        msg_type="photo",
-        text=caption,
-        reply_markup=reply_markup,
-        photo=photo
+        msg_type="text",
+        text="⚠️ This item is no longer available.",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
+        ]),
+        section_key="unknown_item"
     )

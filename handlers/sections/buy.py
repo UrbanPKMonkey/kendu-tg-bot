@@ -5,7 +5,7 @@ from core.menu_state import should_skip_section_render
 
 # ===== Buy Kendu Menu =====
 async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if await should_skip_section_render(update, context, section_type="text"):
+    if await should_skip_section_render(update, context, section_type="text", section_key="buy"):
         return
 
     print("🛒 Buy menu opened")
@@ -33,7 +33,14 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    await menu_renderer(update, context, msg_type="text", text=text, reply_markup=reply_markup)
+    await menu_renderer(
+    update=update,
+    context=context,
+    msg_type="text",
+    text=text,
+    reply_markup=reply_markup,
+    section_key="buy"
+    )
 
 
 

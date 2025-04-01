@@ -5,7 +5,7 @@ from core.menu_state import should_skip_section_render
 
 
 async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if await should_skip_section_render(update, context, section_type="text"):
+    if await should_skip_section_render(update, context, section_type="text", section_key="follow"):
         return
 
     print("🔗 Showing Kendu follow links")
@@ -33,5 +33,6 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
         context=context,
         msg_type="text",
         text=text,
-        reply_markup=reply_markup
+        reply_markup=reply_markup,
+        section_key="follow"
     )
