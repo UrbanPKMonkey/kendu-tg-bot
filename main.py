@@ -11,10 +11,10 @@ from telegram.ext import (
     CallbackQueryHandler
 )
 
-# 🔌 Command & Callback Logic
+# 🔌 Command and Callback Logic
 from handlers.commands import (
     start, menu, about, eco, buykendu, contracts, faq, follow,
-    logout, restart  # ✅ Newly added commands
+    logout, restart  # ✅ Registered reset logic
 )
 from handlers.callbacks import handle_button
 
@@ -23,7 +23,7 @@ load_dotenv()
 BOT_TOKEN: str = os.getenv('BOT_TOKEN')
 RAILWAY_URL: str = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 
-# ⚙️ Create Telegram application
+# ⚙️ Build the Telegram bot application
 bot_app = (
     Application.builder()
     .token(BOT_TOKEN)
@@ -31,7 +31,7 @@ bot_app = (
     .build()
 )
 
-# ✅ Slash Command Menu & Webhook
+# 🛠 Post-start setup: Slash commands + webhook
 async def post_init(application):
     print("🛠 Setting up slash commands and webhook menu...")
 
@@ -54,7 +54,7 @@ async def post_init(application):
     await application.bot.setWebhook(url=webhook_url)
     print(f"🌐 Webhook registered at: {webhook_url}")
 
-# 🔁 Webhook lifecycle
+# 🔁 Telegram lifecycle with graceful start/stop
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     async with bot_app:
@@ -64,10 +64,9 @@ async def lifespan(_: FastAPI):
         await bot_app.stop()
         print("🛑 Bot stopped.")
 
-# 🚀 FastAPI instance
+# 🚀 FastAPI app with Telegram webhook
 app = FastAPI(lifespan=lifespan)
 
-# 📬 Telegram webhook receiver
 @app.post("/")
 async def process_update(request: Request):
     message = await request.json()
@@ -75,7 +74,7 @@ async def process_update(request: Request):
     await bot_app.process_update(update)
     return Response(status_code=HTTPStatus.OK)
 
-# 🔁 Command Handlers
+# ✅ Slash Commands
 bot_app.add_handler(CommandHandler("start", start))
 bot_app.add_handler(CommandHandler("menu", menu))
 bot_app.add_handler(CommandHandler("about", about))
@@ -87,8 +86,8 @@ bot_app.add_handler(CommandHandler("follow", follow))
 bot_app.add_handler(CommandHandler("logout", logout))     # ✅
 bot_app.add_handler(CommandHandler("restart", restart))   # ✅
 
-# 🔘 Callback Buttons
+# 🔘 Inline Button Callbacks
 bot_app.add_handler(CallbackQueryHandler(handle_button))
 
-# 🔧 Post-initialization hook
+# 🔧 Attach post-init setup
 bot_app.post_init = post_init

@@ -19,13 +19,10 @@ ROUTES = {
     "follow": "follow_links",
 }
 
-
-# ===== /start handler (welcome image with menu cleanup) =====
+# ===== /start handler (welcome image with context cleanup) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
-
-    # Clean state on startup
-    reset_menu_context(context)
+    await _reset_user_state(update, context)
 
     caption = (
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
@@ -68,9 +65,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-
 # ===== Slash command routing =====
-
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _route_command(update, context, "menu")
 
@@ -92,8 +87,7 @@ async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _route_command(update, context, "follow")
 
-
-# ===== Command router core logic =====
+# ===== Command router logic =====
 async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd_key: str):
     print(f"📩 /{cmd_key} command received")
 
@@ -104,13 +98,10 @@ async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd
     if callback_data:
         await handle_button(update, context, data_override=callback_data)
 
-
-# ===== /logout and /restart handlers (shared logic) =====
+# ===== /logout and /restart handlers =====
 async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("👋 /logout received — clearing user menu state")
-
+    print("👋 /logout received")
     await _reset_user_state(update, context)
-
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="✅ You’ve been logged out. Start again with /start or /menu.",
@@ -118,24 +109,21 @@ async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("🔁 /restart received — resetting bot state for user")
-
+    print("🔁 /restart received")
     await _reset_user_state(update, context)
-
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="🔁 Your session has been reset.\nUse /start to begin fresh or /menu to re-enter the portal.",
         parse_mode="HTML"
     )
 
-
-# ===== Shared cleanup logic =====
+# ===== Shared cleanup for tracked menu state =====
 async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message or (update.callback_query and update.callback_query.message)
     chat_id = message.chat_id if message else None
 
     if not chat_id:
-        print("⚠️ No chat_id in reset handler")
+        print("⚠️ No chat_id found during reset")
         return
 
     old_msg_ids, _ = get_tracked_menu_state(context)
