@@ -1,5 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+
 from ui.menu_renderer import menu_renderer
 from ui.menu_ui import add_black_background_to_image
 
@@ -52,7 +53,8 @@ async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TY
             text="⚠️ This item is no longer available.",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
-            ])
+            ]),
+            section_key="unknown_item"
         )
         return
 
@@ -73,10 +75,9 @@ async def handle_ecosystem_item(update: Update, context: ContextTypes.DEFAULT_TY
     await menu_renderer(
         update=update,
         context=context,
-        msg_type="text",
-        text="⚠️ This item is no longer available.",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Back", callback_data="ecosystem")]
-        ]),
-        section_key="unknown_item"
+        msg_type="photo",
+        photo=photo,
+        text=caption,
+        reply_markup=reply_markup,
+        section_key=item
     )
