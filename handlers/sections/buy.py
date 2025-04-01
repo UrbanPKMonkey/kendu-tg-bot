@@ -1,13 +1,11 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from ui.menu_renderer import menu_renderer
-from core.menu_state import get_tracked_menu_state
+from core.menu_state import should_skip_section_render
 
 # ===== Buy Kendu Menu =====
 async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    old_msg_ids, old_type = get_tracked_menu_state(context)
-    if old_type == "text" and old_msg_ids:
-        print("⏭️ Buy menu already active — skipping re-render")
+    if await should_skip_section_render(update, context, section_type="text"):
         return
 
     print("🛒 Buy menu opened")

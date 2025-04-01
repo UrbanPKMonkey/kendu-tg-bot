@@ -2,12 +2,9 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from ui.menu_renderer import menu_renderer
 from ui.menu_ui import get_contracts_text_and_markup
-from core.menu_state import get_tracked_menu_state
-
+from core.menu_state import should_skip_section_render
 async def handle_contract_addresses(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    old_msg_ids, old_type = get_tracked_menu_state(context)
-    if old_type == "text" and old_msg_ids:
-        print("⏭️ Contracts menu already active — skipping re-render")
+    if await should_skip_section_render(update, context, section_type="text"):
         return
 
     print("📜 Contracts menu opened")

@@ -1,15 +1,12 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
-from core.menu_state import get_tracked_menu_state
+from core.menu_state import should_skip_section_render
 from ui.menu_renderer import menu_renderer
 
 
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # 🧠 Prevent duplicate renders if the menu is already shown
-    old_msg_ids, old_type = get_tracked_menu_state(context)
-    if old_type == "text" and old_msg_ids:
-        print("⏭️ Menu already active — skipping re-render")
+    if await should_skip_section_render(update, context, section_type="text"):
         return
 
     print("📲 /menu or Menu button tapped — rendering main menu")
