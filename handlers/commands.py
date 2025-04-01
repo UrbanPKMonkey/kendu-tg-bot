@@ -2,8 +2,13 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.callbacks import handle_button
 from utils.menu_handler import menu_handler
+from utils.menu_tools import (
+    reset_menu_context,
+    get_tracked_menu_state,
+    safe_delete_message,
+)
 
-# ===== Shared: Route map for slash commands → callback buttons =====
+# ===== Route map for slash commands → callback buttons =====
 ROUTES = {
     "menu": "menu",
     "about": "about",
@@ -15,9 +20,12 @@ ROUTES = {
 }
 
 
-# ===== /start handler (Welcome image with tracked menu cleanup) =====
+# ===== /start handler (welcome image with menu cleanup) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
+
+    # Clean state on startup
+    reset_menu_context(context)
 
     caption = (
         "<b>Welcome to the Official Kendu Bot</b> — your all-in-one portal to the decentralized Kendu ecosystem.\n\n"
@@ -61,7 +69,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-# ===== Unified slash command dispatcher =====
+# ===== Slash command routing =====
+
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _route_command(update, context, "menu")
 
@@ -84,7 +93,7 @@ async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _route_command(update, context, "follow")
 
 
-# ===== Shared command routing logic =====
+# ===== Command router core logic =====
 async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd_key: str):
     print(f"📩 /{cmd_key} command received")
 
@@ -94,3 +103,43 @@ async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd
     callback_data = ROUTES.get(cmd_key)
     if callback_data:
         await handle_button(update, context, data_override=callback_data)
+
+
+# ===== /logout and /restart handlers (shared logic) =====
+async def logout(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("👋 /logout received — clearing user menu state")
+
+    await _reset_user_state(update, context)
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="✅ You’ve been logged out. Start again with /start or /menu.",
+        parse_mode="HTML"
+    )
+
+async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("🔁 /restart received — resetting bot state for user")
+
+    await _reset_user_state(update, context)
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="🔁 Your session has been reset.\nUse /start to begin fresh or /menu to re-enter the portal.",
+        parse_mode="HTML"
+    )
+
+
+# ===== Shared cleanup logic =====
+async def _reset_user_state(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = update.message or (update.callback_query and update.callback_query.message)
+    chat_id = message.chat_id if message else None
+
+    if not chat_id:
+        print("⚠️ No chat_id in reset handler")
+        return
+
+    old_msg_ids, _ = get_tracked_menu_state(context)
+    for msg_id in old_msg_ids:
+        await safe_delete_message(context, chat_id, msg_id)
+
+    reset_menu_context(context)

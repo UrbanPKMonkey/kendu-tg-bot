@@ -8,21 +8,22 @@ from telegram.ext import (
     Application,
     ContextTypes,
     CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
-    filters
+    CallbackQueryHandler
 )
 
-# 🔌 Custom Kendu command & callback handlers
-from handlers.commands import start, menu, about, eco, buykendu, contracts, faq, follow
+# 🔌 Command & Callback Logic
+from handlers.commands import (
+    start, menu, about, eco, buykendu, contracts, faq, follow,
+    logout, restart  # ✅ Newly added commands
+)
 from handlers.callbacks import handle_button
 
-# 🔐 Load env vars
+# 🔐 Load environment variables
 load_dotenv()
 BOT_TOKEN: str = os.getenv('BOT_TOKEN')
 RAILWAY_URL: str = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 
-# ⚙️ Build the Telegram application
+# ⚙️ Create Telegram application
 bot_app = (
     Application.builder()
     .token(BOT_TOKEN)
@@ -30,7 +31,7 @@ bot_app = (
     .build()
 )
 
-# ✅ Set commands + webhook
+# ✅ Slash Command Menu & Webhook
 async def post_init(application):
     print("🛠 Setting up slash commands and webhook menu...")
 
@@ -42,7 +43,10 @@ async def post_init(application):
         BotCommand("contracts", "View Contract Addresses"),
         BotCommand("faq", "Frequently Asked Questions"),
         BotCommand("follow", "Official Links & Socials"),
+        BotCommand("logout", "Clear menu state and reset"),        # ✅
+        BotCommand("restart", "Full reset & reinit the bot")       # ✅
     ]
+
     await application.bot.set_my_commands(commands)
     await application.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
 
@@ -60,10 +64,10 @@ async def lifespan(_: FastAPI):
         await bot_app.stop()
         print("🛑 Bot stopped.")
 
-# 🚀 FastAPI app
+# 🚀 FastAPI instance
 app = FastAPI(lifespan=lifespan)
 
-# 📬 Webhook endpoint
+# 📬 Telegram webhook receiver
 @app.post("/")
 async def process_update(request: Request):
     message = await request.json()
@@ -71,7 +75,7 @@ async def process_update(request: Request):
     await bot_app.process_update(update)
     return Response(status_code=HTTPStatus.OK)
 
-# 🧠 Telegram handlers
+# 🔁 Command Handlers
 bot_app.add_handler(CommandHandler("start", start))
 bot_app.add_handler(CommandHandler("menu", menu))
 bot_app.add_handler(CommandHandler("about", about))
@@ -80,7 +84,11 @@ bot_app.add_handler(CommandHandler("buykendu", buykendu))
 bot_app.add_handler(CommandHandler("contracts", contracts))
 bot_app.add_handler(CommandHandler("faq", faq))
 bot_app.add_handler(CommandHandler("follow", follow))
+bot_app.add_handler(CommandHandler("logout", logout))     # ✅
+bot_app.add_handler(CommandHandler("restart", restart))   # ✅
+
+# 🔘 Callback Buttons
 bot_app.add_handler(CallbackQueryHandler(handle_button))
 
-# 🛠 Attach post-init hook
+# 🔧 Post-initialization hook
 bot_app.post_init = post_init
