@@ -1,10 +1,21 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from handlers.callbacks import handle_button
-from utils.message_tools import delete_and_send_new
 from utils.menu_handler import menu_handler
 
-# ✅ /start command shows welcome image (smart-tracked)
+# ===== Shared: Route map for slash commands → callback buttons =====
+ROUTES = {
+    "menu": "menu",
+    "about": "about",
+    "eco": "ecosystem",
+    "buykendu": "buy_kendu",
+    "contracts": "contract_addresses",
+    "faq": "faq",
+    "follow": "follow_links",
+}
+
+
+# ===== /start handler (Welcome image with tracked menu cleanup) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ /start received")
 
@@ -49,60 +60,37 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-# ✅ Slash commands using new menu_handler (No simulate_button)
 
+# ===== Unified slash command dispatcher =====
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /menu command received")
-
-    if await menu_handler(update, context, msg_type="text"):
-        return  # Already showing correct menu
-
-    await handle_button(update, context, data_override="menu")
+    await _route_command(update, context, "menu")
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /about command received")
-
-    if await menu_handler(update, context, msg_type="text"):
-        return
-
-    await handle_button(update, context, data_override="about")
+    await _route_command(update, context, "about")
 
 async def eco(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /eco command received")
-
-    if await menu_handler(update, context, msg_type="text"):
-        return
-
-    await handle_button(update, context, data_override="ecosystem")
+    await _route_command(update, context, "eco")
 
 async def buykendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /buykendu command received")
-
-    if await menu_handler(update, context, msg_type="text"):
-        return
-
-    await handle_button(update, context, data_override="buy_kendu")
+    await _route_command(update, context, "buykendu")
 
 async def contracts(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /contracts command received")
-
-    if await menu_handler(update, context, msg_type="text"):
-        return
-
-    await handle_button(update, context, data_override="contract_addresses")
+    await _route_command(update, context, "contracts")
 
 async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /faq command received")
-
-    if await menu_handler(update, context, msg_type="text"):
-        return
-
-    await handle_button(update, context, data_override="faq")
+    await _route_command(update, context, "faq")
 
 async def follow(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📩 /follow command received")
+    await _route_command(update, context, "follow")
+
+
+# ===== Shared command routing logic =====
+async def _route_command(update: Update, context: ContextTypes.DEFAULT_TYPE, cmd_key: str):
+    print(f"📩 /{cmd_key} command received")
 
     if await menu_handler(update, context, msg_type="text"):
         return
 
-    await handle_button(update, context, data_override="follow_links")
+    callback_data = ROUTES.get(cmd_key)
+    if callback_data:
+        await handle_button(update, context, data_override=callback_data)

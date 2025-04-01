@@ -170,3 +170,22 @@ async def edit_menu_response(context, chat_id, message_id, text, reply_markup):
         parse_mode="HTML",
         reply_markup=reply_markup
     )
+
+# === Clear Menus ===
+
+async def clear_all_menus(context: ContextTypes.DEFAULT_TYPE, chat_id: int):
+    """
+    Deletes all tracked menu messages across any type (text, photo, etc.).
+    Useful for logout, restart, or global cleanup.
+    """
+    old_msg_ids = context.user_data.get("menu_msg_ids", [])
+
+    for msg_id in old_msg_ids:
+        try:
+            await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
+        except Exception:
+            pass
+
+    # Reset user_data menu tracking
+    context.user_data["menu_msg_ids"] = []
+    context.user_data["menu_msg_type"] = None
