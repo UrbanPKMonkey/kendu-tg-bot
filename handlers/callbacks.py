@@ -91,8 +91,20 @@ async def start_continue(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # === 🔁 /restart: Confirmed Reset ===
 async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("✅ Restart confirmed")
+
+    # 🧹 Delete previous messages
+    try:
+        if update.callback_query:
+            await update.callback_query.message.delete()
+        if update.message:
+            await update.message.delete()
+    except Exception as e:
+        print(f"⚠️ Failed to delete restart messages: {e}")
+
+    # 🔁 Full reset
     await delete_all_bot_messages(update, context)
     await _reset_user_state(update, context, reset_start=True)
+
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
         text="🔁 Restart complete.\nUse /start to begin fresh or /menu to resume.",
