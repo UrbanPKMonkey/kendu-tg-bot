@@ -1,6 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.menu_handler import menu_handler
+from ui.menu_renderer import menu_renderer
 
 async def send_start_welcome_screen(update, context: ContextTypes.DEFAULT_TYPE):
     """
@@ -41,7 +41,7 @@ async def send_start_welcome_screen(update, context: ContextTypes.DEFAULT_TYPE):
 
     # Send the welcome message with image
     try:
-        sent = await menu_handler(
+        sent = await menu_renderer(
             update=update,
             context=context,
             msg_type="photo",

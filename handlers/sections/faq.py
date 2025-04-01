@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.menu_handler import menu_handler
+from ui.menu_renderer import menu_renderer
 
 
 # ===== 🤔 FAQ Menu =====
@@ -24,7 +24,7 @@ async def handle_faq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",
@@ -90,7 +90,7 @@ async def handle_faq_answer(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         [InlineKeyboardButton("🔙 Back", callback_data="faq")]
     ])
 
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",

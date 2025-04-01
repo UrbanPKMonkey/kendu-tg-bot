@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.menu_handler import menu_handler
+from ui.menu_renderer import menu_renderer
 
 
 async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -26,7 +26,7 @@ async def handle_follow_links(update: Update, context: ContextTypes.DEFAULT_TYPE
     ])
 
     # Send the follow links menu
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",

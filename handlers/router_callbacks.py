@@ -1,20 +1,14 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-# 🔧 Bot utilities
-from utils.message_tools import (
-    smart_send_or_edit,
-    delete_all_bot_messages,
-    track_bot_message  # ✅ NEW
-)
-from utils.menu_tools import (
-    reset_menu_context,
-    get_tracked_menu_state,
-    safe_delete_message,
-)
-from utils.user_state import _reset_user_state
+# 🧠 Bot utilities
+from core.menu_state import reset_menu_context, get_tracked_menu_state, safe_delete_message
+from core.message_tracker import track_bot_message
+from ui.menu_renderer import menu_renderer
+from ui.menu_ui import get_contracts_text_and_markup, smart_send_or_edit
+from core.user_state import _reset_user_state
 
-# 📚 Core section handlers
+# 📚 Section handlers
 from handlers.sections.menu import handle_menu
 from handlers.sections.about import handle_about
 from handlers.sections.ecosystem import handle_ecosystem
@@ -23,8 +17,14 @@ from handlers.sections.buy import handle_buy_kendu, handle_buy_chain
 from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
-from handlers.sections.start import send_start_welcome_screen
 
+# 🚀 Shared action handlers
+from handlers.menu_actions import (
+    start_wipe_confirmed,
+    start_continue,
+    restart_confirmed,
+    restart_cancelled
+)
 
 # === 🧠 Central Callback Router ===
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data_override=None):
@@ -75,80 +75,34 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
             new_text=text,
             reply_markup=reply_markup
         )
-        track_bot_message(context, sent)  # ✅ Track fallback message
+        track_bot_message(context, sent)
 
 
-# === 🧼 /start: Wipe Confirmed ===
-async def start_wipe_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("🧼 Start wipe confirmed")
-    await delete_all_bot_messages(update, context)
-    await _reset_user_state(update, context, reset_start=True)
-    await send_start_welcome_screen(update, context)
-
-
-# === 🤖 /start: Continue Without Wipe ===
-async def start_continue(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("🤖 Start without wipe")
-    await _reset_user_state(update, context, reset_start=True)
-    await send_start_welcome_screen(update, context)
-
-
-# === 🔁 /restart: Confirmed Reset ===
-async def restart_confirmed(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("✅ Restart confirmed")
-
-    try:
-        if update.callback_query:
-            await update.callback_query.message.delete()
-        if update.message:
-            await update.message.delete()
-    except Exception as e:
-        print(f"⚠️ Failed to delete restart messages: {e}")
-
-    await delete_all_bot_messages(update, context)
-    await _reset_user_state(update, context, reset_start=True)
-
-    sent = await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="🔁 Restart complete.\nUse /start to begin fresh or /menu to resume.",
-        parse_mode="HTML"
-    )
-    track_bot_message(context, sent)  # ✅ Track the confirmation
-
-
-# === ❌ /restart: Cancelled ===
-async def restart_cancelled(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("❌ Restart cancelled")
-    await _reset_user_state(update, context, reset_start=False)
-    await handle_button(update, context, data_override="menu")
-
-
+# === 📜 /commands Inline Button ===
 async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /commands button click to show available commands."""
     commands_text = (
         "📝 <b>Available Commands</b>\n\n"
-        "/start  → Start the bot and get the welcome screen\n"
-        "/menu   → Open the main Kendu Menu\n"
-        "/about  → Learn about Kendu\n"
-        "/eco    → Explore the Ecosystem\n"
-        "/buykendu → How to Buy Kendu\n"
+        "/start     → Welcome screen\n"
+        "/menu      → Open the main menu\n"
+        "/about     → Learn about Kendu\n"
+        "/eco       → Explore the Ecosystem\n"
+        "/buykendu  → How to Buy\n"
         "/contracts → View Contract Addresses\n"
-        "/faq    → Frequently Asked Questions\n"
-        "/follow → Official Links & Socials\n"
-        "/logout → Clear menu state and reset\n"
-        "/restart → Full reset & reinit the bot"
+        "/faq       → Questions & Answers\n"
+        "/follow    → Official Links & Socials\n"
+        "/logout    → Clear menu state and reset\n"
+        "/restart   → Full reset & reinit the bot"
     )
 
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    # Send the list of commands
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",
         text=commands_text,
         reply_markup=reply_markup
     )
-

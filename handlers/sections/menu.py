@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.menu_handler import menu_handler
+from ui.menu_renderer import menu_renderer
 
 # List of commands you want to display in the menu
 ALL_COMMANDS = [
@@ -31,7 +31,7 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(buttons)
 
     # Send the main menu
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",
@@ -51,7 +51,7 @@ async def handle_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(buttons)
 
     # Send the message with all commands
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",

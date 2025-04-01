@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.menu_handler import menu_handler
+from ui.menu_renderer import menu_renderer
 
 # ===== Buy Kendu Menu =====
 async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -29,7 +29,7 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",
@@ -99,7 +99,7 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
         [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
     ])
 
-    await menu_handler(
+    await menu_renderer(
         update=update,
         context=context,
         msg_type="text",
