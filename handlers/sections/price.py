@@ -7,11 +7,12 @@ from ui.menu_renderer import menu_renderer
 
 async def handle_price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("📊 /price command triggered")
+    context.user_data["current_section"] = "price"
 
     price_panel = await get_kendu_price_panel()
 
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔄 Refresh Prices", callback_data="refresh_prices")],
+        [InlineKeyboardButton("🔄 Refresh Price", callback_data="refresh_prices")],
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 

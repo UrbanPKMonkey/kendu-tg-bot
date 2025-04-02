@@ -1,5 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+
 from ui.menu_renderer import menu_renderer
 from core.menu_state import should_skip_section_render
 from core.price_fetcher import get_kendu_price_panel
@@ -11,6 +12,7 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     print("🛒 Buy menu opened")
+    context.user_data["current_section"] = "buy"
 
     base_text = (
         "💰 <b>Buy $KENDU</b>\n\n"
@@ -34,7 +36,7 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("⚫ Buy on Ethereum (ETH)", callback_data="buy_eth")],
         [InlineKeyboardButton("🟣 Buy on Solana (SOL)", callback_data="buy_sol")],
         [InlineKeyboardButton("🔵 Buy on Base (BASE)", callback_data="buy_base")],
-        [InlineKeyboardButton("🔄 Refresh Prices", callback_data="refresh_prices")],
+        [InlineKeyboardButton("🔄 Refresh Price", callback_data="refresh_prices")],
         [InlineKeyboardButton("🔙 Back", callback_data="menu")]
     ])
 
@@ -48,9 +50,10 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-# ===== Buy on Individual Chains =====
+# ===== Individual Chain Buy Instructions =====
 async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, chain: str):
     print(f"🧾 Showing DEX instructions for: {chain.upper()}")
+    context.user_data["current_section"] = chain
 
     chains = {
         "buy_eth": {
@@ -104,7 +107,7 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
     )
 
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🛒 Trade Now", url=data["link"])],
+        [InlineKeyboardButton(f"🛒 Buy on {data['dex']}", url=data["link"])],
         [InlineKeyboardButton("🔙 Back", callback_data="buy_kendu")]
     ])
 
@@ -118,7 +121,15 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
     )
 
 
-# ===== Refresh Button Callback =====
+# ===== Shared Refresh Handler =====
 async def handle_refresh_prices(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("🔄 Refreshing price panel...")
-    await handle_buy_kendu(update, context)
+
+    current_section = context.user_data.get("current_section")
+
+    if current_section == "buy":
+        await handle_buy_kendu(update, context)
+    elif current_section == "price":
+        await handle_price(update, context)
+    else:
+        await handle_price(update, context)  # fallback

@@ -1,100 +1,81 @@
-import httpx
 import time
+import aiohttp
 
-# ✅ Token + gas API endpoints
-API_ENDPOINTS = {
-    "eth": "https://api.geckoterminal.com/api/v2/networks/eth/tokens/0xaa95f26e30001251fb905d264Aa7b00eE9dF6C18",
-    "sol": "https://api.geckoterminal.com/api/v2/networks/solana/tokens/2nnrviYJRLcf2bXAxpKTRXzccoDbwaP4vzuGUG75Jo45",
-    "base": "https://api.geckoterminal.com/api/v2/networks/base/tokens/0xef73611F98DA6E57e0776317957af61B59E09Ed7",
-}
-ETH_GAS_API = "https://api.etherscan.io/api?module=gastracker&action=gasoracle"
+# ETH-only KENDU token on GeckoTerminal
+GECKO_ETH_URL = "https://api.geckoterminal.com/api/v2/networks/eth/pools/0x416C8B26d8d18CE4Fa716350FE1C7Ddc1A479fb3"
+DEXTOOLS_GAS_URL = "https://www.dextools.io/shared/ethereum/gas"
 
-# ✅ In-memory cache
-_price_cache = {"data": None, "timestamp": 0}
+# Cache settings
 CACHE_DURATION = 60  # seconds
+_price_cache = {}
+_last_fetch_time = 0
 
 
-def format_number(num: float) -> str:
-    if num >= 1_000_000_000:
-        return f"${num / 1_000_000_000:.2f}B"
-    elif num >= 1_000_000:
-        return f"${num / 1_000_000:.2f}M"
-    else:
-        return f"${num:,.0f}"
+async def get_latest_prices():
+    global _price_cache, _last_fetch_time
 
+    if time.time() - _last_fetch_time < CACHE_DURATION and _price_cache:
+        return _price_cache
 
-def format_percent_change(change: float) -> str:
-    sign = "+" if change >= 0 else "−"
-    return f"{sign}{abs(change):.1f}% 24h"
-
-
-def build_price_block(data: dict) -> str:
-    text = (
-        f"{data['emoji']} <b>{data['label']}</b>\n"
-        f"Price: {data['price']} ({data['change']})\n"
-        f"Market Cap: {data['market_cap']}"
-    )
-    if data.get("gas"):
-        text += f"\nGas: {data['gas']}"
-    return text + "\n"
-
-
-async def get_eth_gas_fee() -> str:
     try:
-        async with httpx.AsyncClient() as client:
-            res = await client.get(ETH_GAS_API, timeout=10)
-            res.raise_for_status()
-            data = res.json()["result"]
-            return f"{data['FastGasPrice']} gwei (fast)"
+        async with aiohttp.ClientSession() as session:
+            # Get ETH price and volume from GeckoTerminal
+            async with session.get(GECKO_ETH_URL) as res:
+                eth_data = await res.json()
+
+            # Get gas from DEXTools
+            async with session.get(DEXTOOLS_GAS_URL) as gas_res:
+                gas_data = await gas_res.json()
+
+        # Parse GeckoTerminal response
+        pool_data = eth_data["data"]["attributes"]
+        price_usd = float(pool_data["base_token_price_usd"])
+        volume_24h = float(pool_data["volume_usd"]["h24"])
+        price_change = float(pool_data["price_change_percentage"]["h24"])
+        market_cap = float(pool_data["base_token_market_cap_usd"])
+
+        # Format numbers
+        price_str = f"{price_usd:.6f}"
+        volume_str = f"{volume_24h:,.0f}"
+        market_cap_str = f"{market_cap:,.0f}"
+        change_str = f"{price_change:+.1f}%"
+
+        # Parse gas
+        gas_speed = gas_data.get("fast", {}).get("gwei", "–")
+
+        # Store formatted ETH data
+        _price_cache = {
+            "ETH": {
+                "price": price_str,
+                "volume_24h": volume_str,
+                "market_cap": market_cap_str,
+                "change_24h": change_str,
+                "gas": gas_speed,
+                "is_positive": price_change >= 0
+            }
+        }
+        _last_fetch_time = time.time()
+
+        return _price_cache
+
     except Exception as e:
-        print(f"⚠️ Error fetching ETH gas fee: {e}")
-        return "Unavailable"
+        print(f"[price_fetcher] Error fetching ETH price: {e}")
+        return {}
 
 
-async def get_kendu_price_panel() -> str:
-    # ✅ Use cache if fresh
-    now = time.time()
-    if _price_cache["data"] and now - _price_cache["timestamp"] < CACHE_DURATION:
-        print("💾 Using cached price panel")
-        return _price_cache["data"]
+def build_price_panel(data: dict) -> str:
+    eth = data.get("ETH", {})
+    if not eth:
+        return "⚠️ Unable to fetch live price data."
 
-    print("🌐 Fetching fresh prices...")
-    output = ["📊 <b>$KENDU Live Prices</b>\n"]
+    # Determine circle color
+    circle = "🟢" if eth.get("is_positive") else "🔴"
 
-    display_data = {
-        "eth": {"emoji": "⚫", "label": "Ethereum (ETH)"},
-        "sol": {"emoji": "🟣", "label": "Solana (SOL)"},
-        "base": {"emoji": "🔵", "label": "Base (BASE)"},
-    }
-
-    eth_gas = await get_eth_gas_fee()
-
-    async with httpx.AsyncClient() as client:
-        for chain, url in API_ENDPOINTS.items():
-            try:
-                res = await client.get(url, timeout=10)
-                res.raise_for_status()
-                token_data = res.json()["data"]["attributes"]
-
-                price = f"${float(token_data['price_usd']):.6f}"
-                mcap = format_number(float(token_data['market_cap_usd']))
-                change_24h = format_percent_change(float(token_data["price_percent_change_24h"]))
-
-                display_data[chain]["price"] = price
-                display_data[chain]["market_cap"] = mcap
-                display_data[chain]["change"] = change_24h
-
-                if chain == "eth":
-                    display_data[chain]["gas"] = eth_gas
-
-                output.append(build_price_block(display_data[chain]))
-
-            except Exception as e:
-                print(f"⚠️ Error fetching {chain.upper()} data: {e}")
-                output.append(f"{display_data[chain]['emoji']} <b>{display_data[chain]['label']}</b>\nUnavailable\n")
-
-    final_text = "\n".join(output)
-    _price_cache["data"] = final_text
-    _price_cache["timestamp"] = now
-
-    return final_text
+    return (
+        f"\n\n📊 $KENDU Live Price\n"
+        f"• 🪙 Price: ${eth['price']}\n"
+        f"• {circle} 24H Change: {eth['change_24h']}\n"
+        f"• 📦 24H Volume: ${eth['volume_24h']}\n"
+        f"• 💰 Market Cap: ${eth['market_cap']}\n"
+        f"• ⛽️ Gas: {eth['gas']} gwei (fast)"
+    )
