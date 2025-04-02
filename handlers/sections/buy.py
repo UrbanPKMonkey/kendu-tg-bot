@@ -3,8 +3,8 @@ from telegram.ext import ContextTypes
 
 from ui.menu_renderer import menu_renderer
 from core.menu_state import should_skip_section_render
-from core.price_fetcher import get_kendu_price_panel
-
+from core.price_fetcher import get_latest_prices, build_price_panel
+from handlers.sections.price import handle_price  # Ensure this import exists
 
 # ===== Buy Kendu Menu =====
 async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -29,7 +29,9 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📌 <i>Use a trusted wallet & verify all contracts via /contracts</i>\n\n"
     )
 
-    price_panel = await get_kendu_price_panel()
+    # Fetch and build price panel correctly
+    price_data = await get_latest_prices()
+    price_panel = build_price_panel(price_data)
     full_text = f"{base_text}{price_panel}"
 
     reply_markup = InlineKeyboardMarkup([
@@ -132,4 +134,4 @@ async def handle_refresh_prices(update: Update, context: ContextTypes.DEFAULT_TY
     elif current_section == "price":
         await handle_price(update, context)
     else:
-        await handle_price(update, context)  # fallback
+        await handle_buy_kendu(update, context)  # default fallback

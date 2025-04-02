@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-# 🔧 Core utilities used here
+# 🔧 Core utilities
 from core.message_tracker import track_bot_message
 from ui.menu_renderer import menu_renderer
 
@@ -14,7 +14,7 @@ from handlers.sections.buy import handle_buy_kendu, handle_buy_chain, handle_ref
 from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
-from handlers.sections.price import handle_price  # ✅ NEW
+from handlers.sections.price import handle_price  # ✅ Confirmed updated
 
 # 🚀 Action callbacks
 from handlers.menu_actions import (
@@ -24,7 +24,6 @@ from handlers.menu_actions import (
     restart_cancelled
 )
 
-
 # === 🧠 Central Callback Router ===
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data_override=None):
     query = update.callback_query if update else None
@@ -33,58 +32,75 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
     if query:
         await query.answer()
 
-    # 🔀 Route by callback data
+    # 🔀 Routing based on callback data
     if data == "menu":
         await handle_menu(update, context)
+
     elif data == "about":
         await handle_about(update, context)
+
     elif data == "ecosystem":
         await handle_ecosystem(update, context)
+
     elif data.startswith("kendu_"):
         await handle_ecosystem_item(update, context, data)
+
     elif data == "buy_kendu":
         await handle_buy_kendu(update, context)
-    elif data.startswith("buy_") or data.startswith("how_to_"):
+
+    elif data.startswith(("buy_", "how_to_")):
         await handle_buy_chain(update, context, data)
+
     elif data == "refresh_prices":
         await handle_refresh_prices(update, context)
+
     elif data == "price":
-        await handle_price(update, context)  # ✅ NEW BUTTON SUPPORT
+        await handle_price(update, context)
+
     elif data == "faq":
         await handle_faq_menu(update, context)
+
     elif data.startswith("faq_"):
         await handle_faq_answer(update, context, data)
+
     elif data == "contract_addresses":
         await handle_contract_addresses(update, context)
+
     elif data == "follow_links":
         await handle_follow_links(update, context)
+
     elif data == "start_wipe_confirmed":
         await start_wipe_confirmed(update, context)
+
     elif data == "start_continue":
         await start_continue(update, context)
+
     elif data == "restart_confirmed":
         await restart_confirmed(update, context)
+
     elif data == "restart_cancelled":
         await restart_cancelled(update, context)
+
     else:
-        # ❌ Fallback for unknown buttons
-        text = "⚠️ Unknown command. Please use /menu to get back to the main screen."
+        # ❌ Handle unknown buttons gracefully
+        text = "⚠️ Unknown command. Please use /menu to return to the main menu."
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🤖 Back to Menu", callback_data="menu")]
         ])
-        sent = await menu_renderer(
+
+        sent_message = await menu_renderer(
             update=update,
             context=context,
             msg_type="text",
             text=text,
             reply_markup=reply_markup
         )
-        track_bot_message(context, sent)
+        track_bot_message(context, sent_message)
 
 
-# === 📜 /commands Inline Button ===
+# === 📜 /commands Inline Button Handler ===
 async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handles the /commands button click to show available commands."""
+    """Displays available slash commands clearly."""
     commands_text = (
         "📝 <b>Available Commands</b>\n\n"
         "/start     → Welcome screen\n"
@@ -97,7 +113,7 @@ async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYP
         "/faq       → Questions & Answers\n"
         "/follow    → Official Links & Socials\n"
         "/logout    → Clear menu state and reset\n"
-        "/restart   → Full reset & reinit the bot"
+        "/restart   → Full reset & reinitialize bot"
     )
 
     reply_markup = InlineKeyboardMarkup([
