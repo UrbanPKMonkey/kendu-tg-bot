@@ -10,10 +10,11 @@ from handlers.sections.menu import handle_menu
 from handlers.sections.about import handle_about
 from handlers.sections.ecosystem import handle_ecosystem
 from handlers.sections.ecosystem_items import handle_ecosystem_item
-from handlers.sections.buy import handle_buy_kendu, handle_buy_chain
+from handlers.sections.buy import handle_buy_kendu, handle_buy_chain, handle_refresh_prices
 from handlers.sections.faq import handle_faq_menu, handle_faq_answer
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.follow import handle_follow_links
+from handlers.sections.price import handle_price  # ✅ NEW
 
 # 🚀 Action callbacks
 from handlers.menu_actions import (
@@ -22,6 +23,7 @@ from handlers.menu_actions import (
     restart_confirmed,
     restart_cancelled
 )
+
 
 # === 🧠 Central Callback Router ===
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data_override=None):
@@ -44,6 +46,10 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE, data
         await handle_buy_kendu(update, context)
     elif data.startswith("buy_") or data.startswith("how_to_"):
         await handle_buy_chain(update, context, data)
+    elif data == "refresh_prices":
+        await handle_refresh_prices(update, context)
+    elif data == "price":
+        await handle_price(update, context)  # ✅ NEW BUTTON SUPPORT
     elif data == "faq":
         await handle_faq_menu(update, context)
     elif data.startswith("faq_"):
@@ -86,6 +92,7 @@ async def handle_show_commands(update: Update, context: ContextTypes.DEFAULT_TYP
         "/about     → Learn about Kendu\n"
         "/eco       → Explore the Ecosystem\n"
         "/buykendu  → How to Buy\n"
+        "/price     → Live Kendu Prices\n"
         "/contracts → View Contract Addresses\n"
         "/faq       → Questions & Answers\n"
         "/follow    → Official Links & Socials\n"

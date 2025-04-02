@@ -8,11 +8,13 @@ from handlers.sections.buy import handle_buy_kendu
 from handlers.sections.contracts import handle_contract_addresses
 from handlers.sections.faq import handle_faq_menu
 from handlers.sections.follow import handle_follow_links
+from handlers.sections.price import handle_price  # ✅ NEW
 
 from handlers.menu_actions import handle_start, logout, ask_restart_confirmation
 from handlers.admin import refresh_commands
 
 from core.commands_config import COMMAND_DEFINITIONS  # ✅ now clean
+
 
 def register_slash_commands(bot_app):
     """Register all slash commands with the bot (wrapped for cleanup)."""
@@ -25,6 +27,7 @@ def register_slash_commands(bot_app):
         "contracts": handle_contract_addresses,
         "faq": handle_faq_menu,
         "follow": handle_follow_links,
+        "price": handle_price,  # ✅ NEW
         "logout": logout,
         "restart": ask_restart_confirmation,
     }
