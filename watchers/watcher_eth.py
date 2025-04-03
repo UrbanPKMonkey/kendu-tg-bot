@@ -1,13 +1,13 @@
+import asyncio
 import json
 import os
-import asyncio
 from datetime import datetime, timedelta, timezone
 from web3 import Web3
 from dotenv import load_dotenv
 
 from core.constants import (
     CHAT_ID,
-    ETH_LP_ADDRESS,  # This should already be imported
+    ETH_LP_ADDRESS,
     ETH_TOKEN_ADDRESS,
     POLL_INTERVAL_SECONDS,
     RETENTION_PERIOD_HOURS,
@@ -18,10 +18,10 @@ from utils.build_buy_panel import build_eth_buy_panel
 
 load_dotenv()
 WSS_ETH = os.getenv("WSS_ETH")
-web3 = Web3(Web3.WebsocketProvider(WSS_ETH))
 
-JSON_LOG = "buys_eth.json"
+web3 = Web3(Web3.WebsocketProvider(WSS_ETH))
 TRANSFER_TOPIC = web3.keccak(text="Transfer(address,address,uint256)").hex()
+JSON_LOG = "buys_eth.json"
 
 def load_buys():
     if os.path.exists(JSON_LOG):
@@ -42,23 +42,29 @@ async def run_eth_buy_watcher(bot):
 
     # Test WebSocket connection
     if not web3.is_connected():
-        print("❌ Failed to connect to Web3")
+        print("❌ Failed to connect to Web3 for Ethereum")
         return
 
     print("✅ Connected to Ethereum WebSocket!")
 
-    # Validate Ethereum token and LP addresses
-    eth_lp_address = Web3.to_checksum_address(ETH_LP_ADDRESS)  # Ensure checksum format
-    if web3.eth.get_code(eth_lp_address) == b'':
-        print(f"❌ Ethereum LP address is invalid: {eth_lp_address}")
-    else:
-        print(f"✅ Ethereum LP address is valid: {eth_lp_address}")
+    # Ensure checksum format for Ethereum LP and Token addresses
+    try:
+        ETH_LP_ADDRESS = Web3.to_checksum_address(ETH_LP_ADDRESS)  # Ensure checksum format
+        ETH_TOKEN_ADDRESS = Web3.to_checksum_address(ETH_TOKEN_ADDRESS)  # Ensure checksum format
+    except ValueError as e:
+        print(f"❌ Error with addresses: {e}")
+        return
 
-    eth_token_address = Web3.to_checksum_address(ETH_TOKEN_ADDRESS)  # Ensure checksum format
-    if web3.eth.get_code(eth_token_address) == b'':
-        print(f"❌ Ethereum token address is invalid: {eth_token_address}")
+    # Validate Ethereum token and LP addresses
+    if web3.eth.get_code(ETH_TOKEN_ADDRESS) == b'':
+        print(f"❌ Ethereum token address is invalid: {ETH_TOKEN_ADDRESS}")
     else:
-        print(f"✅ Ethereum token address is valid: {eth_token_address}")
+        print(f"✅ Ethereum token address is valid: {ETH_TOKEN_ADDRESS}")
+    
+    if web3.eth.get_code(ETH_LP_ADDRESS) == b'':
+        print(f"❌ Ethereum LP address is invalid: {ETH_LP_ADDRESS}")
+    else:
+        print(f"✅ Ethereum LP address is valid: {ETH_LP_ADDRESS}")
 
     buys = load_buys()
 
@@ -69,17 +75,18 @@ async def run_eth_buy_watcher(bot):
                 return
 
             from_addr = Web3.to_checksum_address("0x" + topics[1].hex()[-40:])
-            if from_addr.lower() != eth_lp_address.lower():
+            to_addr = Web3.to_checksum_address("0x" + topics[2].hex()[-40:])
+
+            if from_addr.lower() != ETH_LP_ADDRESS.lower():
                 return
 
             token_amount = int(log["data"], 16)
             tokens = token_amount // 10**9
             now = datetime.now(timezone.utc)
 
-            # Placeholder values
-            amount_usd = 0
-            amount_native = 0
-            market_cap = 0
+            amount_usd = 0  # Placeholder
+            amount_native = 0  # Placeholder
+            market_cap = 0  # Placeholder
             emoji_row = "🦍"
 
             buy = {
@@ -108,11 +115,11 @@ async def run_eth_buy_watcher(bot):
         except Exception as e:
             print(f"⚠️ Web3 event handler error: {e}")
 
-    # 👂 Subscribe to Transfer events
+    # 👂 Subscribe to Transfer events for KENDU token
     print("🧪 Testing Ethereum filter...")
     try:
         event_filter = web3.eth.filter({
-            "address": eth_token_address,
+            "address": ETH_TOKEN_ADDRESS,
             "topics": [TRANSFER_TOPIC]
         })
         print("✅ Ethereum filter created successfully!")
