@@ -5,10 +5,16 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
 from telegram import Update, BotCommand, MenuButtonCommands
 from telegram.ext import Application, CallbackQueryHandler
+import asyncio  # ✅ Needed for background tasks
 
 # 🔧 Routing Logic
 from handlers.router_commands import register_slash_commands, COMMAND_DEFINITIONS
 from handlers.router_callbacks import handle_button, handle_show_commands
+
+# ✅ Buy Watchers (ETH, BASE, SOL)
+from watchers.watcher_eth import run_eth_buy_watcher
+from watchers.watcher_base import run_base_buy_watcher
+from watchers.watcher_sol import run_sol_buy_watcher
 
 # 🌱 Load environment variables
 load_dotenv()
@@ -44,6 +50,18 @@ async def lifespan(_: FastAPI):
     async with bot_app:
         await bot_app.start()
         print("✅ Bot started")
+
+        # 🚀 Launch Buy Watchers in background
+        print("🚀 Launching ETH Buy Watcher...")
+        asyncio.create_task(run_eth_buy_watcher(bot_app.bot))
+
+        print("🚀 Launching BASE Buy Watcher...")
+        asyncio.create_task(run_base_buy_watcher(bot_app.bot))
+
+        print("🚀 Launching SOL Buy Watcher...")
+        asyncio.create_task(run_sol_buy_watcher(bot_app.bot))
+
+        print("✅ Buy Watchers Launched!")  # ✅ Confirmation
         yield
         await bot_app.stop()
         print("🛑 Bot stopped")
