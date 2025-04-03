@@ -48,15 +48,17 @@ async def run_eth_buy_watcher(bot):
     print("✅ Connected to Ethereum WebSocket!")
 
     # Validate Ethereum token and LP addresses
-    if web3.eth.get_code(ETH_TOKEN_ADDRESS) == b'':
-        print(f"❌ Ethereum token address is invalid: {ETH_TOKEN_ADDRESS}")
-    else:
-        print(f"✅ Ethereum token address is valid: {ETH_TOKEN_ADDRESS}")
-    
+    ETH_LP_ADDRESS = Web3.to_checksum_address(ETH_LP_ADDRESS)  # Ensure checksum format
     if web3.eth.get_code(ETH_LP_ADDRESS) == b'':
         print(f"❌ Ethereum LP address is invalid: {ETH_LP_ADDRESS}")
     else:
         print(f"✅ Ethereum LP address is valid: {ETH_LP_ADDRESS}")
+
+    ETH_TOKEN_ADDRESS = Web3.to_checksum_address(ETH_TOKEN_ADDRESS)  # Ensure checksum format
+    if web3.eth.get_code(ETH_TOKEN_ADDRESS) == b'':
+        print(f"❌ Ethereum token address is invalid: {ETH_TOKEN_ADDRESS}")
+    else:
+        print(f"✅ Ethereum token address is valid: {ETH_TOKEN_ADDRESS}")
 
     buys = load_buys()
 
