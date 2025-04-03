@@ -1,5 +1,6 @@
 import time
 import aiohttp
+from datetime import datetime
 
 GECKO_ETH_URL = "https://api.geckoterminal.com/api/v2/networks/eth/pools/0xd9f2a7471d1998c69de5cae6df5d3f070f01df9f"
 BEACON_GAS_URL = "https://beaconcha.in/api/v1/execution/gasnow"
@@ -7,10 +8,11 @@ BEACON_GAS_URL = "https://beaconcha.in/api/v1/execution/gasnow"
 CACHE_DURATION = 60  # seconds
 _price_cache = {}
 _last_fetch_time = 0
+_last_updated = None
 
 
 async def get_latest_prices():
-    global _price_cache, _last_fetch_time
+    global _price_cache, _last_fetch_time, _last_updated
 
     if time.time() - _last_fetch_time < CACHE_DURATION and _price_cache:
         print("✅ Returning cached price data")
@@ -20,7 +22,6 @@ async def get_latest_prices():
 
     try:
         async with aiohttp.ClientSession() as session:
-
             # Fetch price from GeckoTerminal
             print("🔍 Getting price from GeckoTerminal...")
             async with session.get(GECKO_ETH_URL) as res:
@@ -52,17 +53,18 @@ async def get_latest_prices():
                 gas_data = await gas_res.json()
                 print("✅ Gas fetched")
 
-            gas_fast_wei = gas_data["data"]["fast"]
-            gas_fast_gwei = round(gas_fast_wei / 1_000_000_000)
+            gas_standard_wei = gas_data["data"]["standard"]
+            gas_standard_gwei = round(gas_standard_wei / 1_000_000_000)
 
-            data_fetched["gas"] = gas_fast_gwei
+            data_fetched["gas"] = gas_standard_gwei
 
     except Exception as e:
         print(f"[price_fetcher] Error fetching gas: {e}")
-        data_fetched["gas"] = "unable to fetch"
+        data_fetched["gas"] = "⚠️ Unable to fetch gas"
 
     _price_cache = {"ETH": data_fetched}
     _last_fetch_time = time.time()
+    _last_updated = datetime.utcnow()
 
     return _price_cache
 
@@ -73,16 +75,22 @@ def build_price_panel(data: dict) -> str:
         return "⚠️ Unable to fetch live price data."
 
     circle = "🟢" if eth.get("is_positive") else "🔴"
+    gas = eth.get("gas", "⚠️ Unable to fetch gas")
 
-    gas_info = eth.get('gas', 'unable to fetch')
+    # Timestamp formatting
+    updated_str = (
+        _last_updated.strftime("%m/%d %H:%M UTC")
+        if _last_updated else "Unknown"
+    )
 
     return (
-        f"\n\n📊 $KENDU Live Price\n"
-        f"• 🪙 Price: ${eth.get('price', 'unable to fetch')}\n"
-        f"• {circle} 24H Change: {eth.get('change_24h', 'unable to fetch')}\n"
-        f"• 📦 24H Volume: ${eth.get('volume_24h', 'unable to fetch')}\n"
-        f"• 💰 Market Cap: ${eth.get('market_cap', 'unable to fetch')}\n"
-        f"• ⛽️ Gas: {gas_info if gas_info != 'unable to fetch' else '⚠️ Unable to fetch gas'} gwei (fast)"
+        f"\n\n📊 <b>$KENDU Price</b>\n\n"
+        f"• <b>💲 Price:</b> ${eth.get('price', 'N/A')}\n"
+        f"• <b>{circle} 24H Change:</b> {eth.get('change_24h', 'N/A')}\n"
+        f"• <b>📦 24H Volume:</b> ${eth.get('volume_24h', 'N/A')}\n"
+        f"• <b>🏦 Market Cap:</b> ${eth.get('market_cap', 'N/A')}\n"
+        f"• <b>⛽️ Gas:</b> {gas} gwei (standard)\n\n"
+        f"<i>⏰ Last Updated: {updated_str}</i>"
     )
 
 
