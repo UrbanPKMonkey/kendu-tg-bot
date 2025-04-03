@@ -1,7 +1,7 @@
 import time
 import aiohttp
 
-GECKO_ETH_URL = "https://api.geckoterminal.com/api/v2/networks/eth/pools/0x416C8B26d8d18CE4Fa716350FE1C7Ddc1A479fb3"
+GECKO_ETH_URL = "https://api.geckoterminal.com/api/v2/networks/eth/pools/0xd9f2a7471d1998c69de5cae6df5d3f070f01df9f"
 BEACON_GAS_URL = "https://beaconcha.in/api/v1/execution/gasnow"
 
 CACHE_DURATION = 60  # seconds
@@ -31,7 +31,7 @@ async def get_latest_prices():
             price_usd = float(pool_data["base_token_price_usd"])
             volume_24h = float(pool_data["volume_usd"]["h24"])
             price_change = float(pool_data["price_change_percentage"]["h24"])
-            market_cap = float(pool_data["base_token_market_cap_usd"])
+            market_cap = float(pool_data["market_cap_usd"])
 
             data_fetched.update({
                 "price": f"{price_usd:.6f}",
