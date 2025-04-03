@@ -40,7 +40,11 @@ def prune_old_buys(data):
 async def fetch_latest_swaps():
     async with aiohttp.ClientSession() as session:
         async with session.get(GECKO_URL) as resp:
+            if resp.status != 200:
+                raise Exception(f"GeckoTerminal error: {resp.status}")
             data = await resp.json()
+            if "data" not in data or "attributes" not in data["data"]:
+                raise Exception("Missing 'data' or 'attributes' in GeckoTerminal response")
             return data["data"]["attributes"]["swaps"]
 
 
