@@ -1,14 +1,14 @@
-# watcher_base.py
-
 import asyncio
 import json
 import os
-import aiohttp
 from datetime import datetime, timedelta, timezone
+from web3 import Web3
+from dotenv import load_dotenv
 
 from core.constants import (
     CHAT_ID,
     BASE_LP_ADDRESS,
+    BASE_TOKEN_ADDRESS,
     POLL_INTERVAL_SECONDS,
     RETENTION_PERIOD_HOURS,
     EMOJI_UNIT_USD,
@@ -16,9 +16,12 @@ from core.constants import (
 )
 from utils.build_buy_panel import build_base_buy_panel
 
-GECKO_URL = f"https://api.geckoterminal.com/api/v2/networks/base/pools/{BASE_LP_ADDRESS}/swaps"
-JSON_LOG = "buys_base.json"
+load_dotenv()
+INFURA_WSS_BASE = os.getenv("WSS_BASE")
 
+web3_base = Web3(Web3.WebsocketProvider(INFURA_WSS_BASE))
+TRANSFER_TOPIC = web3_base.keccak(text="Transfer(address,address,uint256)").hex()
+JSON_LOG = "buys_base.json"
 
 def load_buys():
     if os.path.exists(JSON_LOG):
@@ -26,85 +29,81 @@ def load_buys():
             return json.load(f)
     return []
 
-
 def save_buys(data):
     with open(JSON_LOG, "w") as f:
         json.dump(data, f, indent=2)
-
 
 def prune_old_buys(data):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=RETENTION_PERIOD_HOURS)
     return [b for b in data if datetime.fromisoformat(b["timestamp"]) >= cutoff]
 
-
-async def fetch_latest_swaps():
-    async with aiohttp.ClientSession() as session:
-        async with session.get(GECKO_URL) as resp:
-            if resp.status != 200:
-                raise Exception(f"GeckoTerminal error: {resp.status}")
-            data = await resp.json()
-            if "data" not in data or "attributes" not in data["data"]:
-                raise Exception("Missing 'data' or 'attributes' in GeckoTerminal response")
-            return data["data"]["attributes"]["swaps"]
-
-
 async def run_base_buy_watcher(bot):
-    print("👀 BASE buy watcher started")
-    seen_tx_ids = set()
+    print("👀 BASE buy watcher (Web3) started")
     buys = load_buys()
+
+    if not web3_base.is_connected():
+        print("❌ Failed to connect to Web3 for Base")
+        return
+
+    def handle_event(log):
+        try:
+            topics = log["topics"]
+            if topics[0].hex() != TRANSFER_TOPIC:
+                return
+
+            from_addr = Web3.to_checksum_address("0x" + topics[1].hex()[-40:])
+            to_addr = Web3.to_checksum_address("0x" + topics[2].hex()[-40:])
+
+            # ✅ Detect buys: from LP → user
+            if from_addr.lower() != BASE_LP_ADDRESS.lower():
+                return
+
+            token_amount = int(log["data"], 16)
+            tokens = token_amount // (10**9)  # Assuming 9 decimals for KENDU
+            now = datetime.now(timezone.utc)
+
+            amount_usd = 0  # Placeholder
+            amount_native = 0  # Placeholder
+            market_cap = 0  # Placeholder
+            emoji_row = "🦍"
+
+            buy = {
+                "timestamp": now.isoformat(),
+                "chain": "BASE",
+                "amount_usd": amount_usd,
+                "amount_native": amount_native,
+                "tokens": tokens,
+                "market_cap": market_cap,
+                "tx_hash": log["transactionHash"].hex(),
+                "emoji_row": emoji_row,
+            }
+
+            print(f"💰 New BASE Buy via Web3: {tokens:,} KENDU")
+            buys.append(buy)
+            save_buys(prune_old_buys(buys))
+
+            msg = build_base_buy_panel(buy)
+            asyncio.create_task(bot.send_message(
+                chat_id=CHAT_ID,
+                text=msg,
+                parse_mode="HTML",
+                disable_web_page_preview=True
+            ))
+
+        except Exception as e:
+            print(f"⚠️ Web3 event handler error: {e}")
+
+    # 👂 Subscribe to Transfer events for KENDU token
+    event_filter = web3_base.eth.filter({
+        "address": BASE_TOKEN_ADDRESS,
+        "topics": [TRANSFER_TOPIC]
+    })
 
     while True:
         try:
-            swaps = await fetch_latest_swaps()
-            new_detected = []
-
-            for s in swaps:
-                if s["trade_type"] != "buy":
-                    continue
-
-                tx = s["tx_id"]
-                if tx in seen_tx_ids:
-                    continue
-
-                seen_tx_ids.add(tx)
-                ts = datetime.fromtimestamp(s["timestamp"], tz=timezone.utc)
-
-                amount_usd = round(float(s["amount_in_usd"]), 2)
-                amount_native = round(float(s["amount_in"]), 4)
-                tokens = int(float(s["amount_out"]))
-                market_cap = int(float(s.get("market_cap_usd", 0)))
-                emoji_row = "🦍" * min(max(int(amount_usd / EMOJI_UNIT_USD), 1), MAX_EMOJIS)
-
-                buy = {
-                    "timestamp": ts.isoformat(),
-                    "chain": "BASE",
-                    "amount_usd": amount_usd,
-                    "amount_native": amount_native,
-                    "tokens": tokens,
-                    "market_cap": market_cap,
-                    "tx_hash": tx,
-                    "emoji_row": emoji_row
-                }
-
-                print(f"💰 New BASE Buy: ${amount_usd} | {tokens} KENDU")
-                buys.append(buy)
-                new_detected.append(buy)
-
-            if new_detected:
-                buys = prune_old_buys(buys)
-                save_buys(buys)
-
-                for buy in new_detected:
-                    msg = build_base_buy_panel(buy)
-                    await bot.send_message(
-                        chat_id=CHAT_ID,
-                        text=msg,
-                        parse_mode="HTML",
-                        disable_web_page_preview=True
-                    )
-
+            for log in event_filter.get_new_entries():
+                handle_event(log)
             await asyncio.sleep(POLL_INTERVAL_SECONDS)
-
         except Exception as e:
-            print(f"⚠️ BASE watcher error: {e}")
+            print(f"⚠️ BASE Web3 loop error: {e}")
             await asyncio.sleep(10)
