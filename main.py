@@ -1,3 +1,5 @@
+# main.py
+
 import os
 import asyncio
 from contextlib import asynccontextmanager
@@ -25,9 +27,8 @@ bot_app = Application.builder().token(BOT_TOKEN).updater(None).build()
 from handlers.router_commands import register_slash_commands, COMMAND_DEFINITIONS
 from handlers.router_callbacks import handle_button, handle_show_commands
 
-# 🚨 Buy Watchers
+# 🚨 Buy Watchers (Polling-based)
 from watchers.watcher_eth import run_eth_buy_watcher
-from watchers.watcher_sol import run_sol_buy_watcher
 from watchers.watcher_base import run_base_buy_watcher
 
 # 🛠️ Post-init: setup webhook + slash commands
@@ -52,7 +53,7 @@ async def lifespan(_: FastAPI):
         await bot_app.start()
         print("✅ Bot started")
 
-        # 🚀 Launch watchers
+        # 🚀 Launch polling-based watchers
         print("👀 ETH buy watcher launching...")
         asyncio.create_task(run_eth_buy_watcher(bot_app.bot))
 

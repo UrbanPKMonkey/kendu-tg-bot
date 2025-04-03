@@ -1,6 +1,8 @@
-import asyncio
+# watcher_base.py
+
 import json
 import os
+import asyncio
 from datetime import datetime, timedelta, timezone
 from web3 import Web3
 from dotenv import load_dotenv
@@ -17,10 +19,12 @@ from core.constants import (
 from utils.build_buy_panel import build_base_buy_panel
 
 load_dotenv()
-WSS_BASE = os.getenv("WSS_BASE")
-web3 = Web3(Web3.WebsocketProvider(WSS_BASE))
-TRANSFER_TOPIC = web3.keccak(text="Transfer(address,address,uint256)").hex()
+INFURA_HTTP_BASE = os.getenv("INFURA_HTTP_BASE")  # Add this to your .env
+
+web3 = Web3(Web3.HTTPProvider(INFURA_HTTP_BASE))
+
 JSON_LOG = "buys_base.json"
+TRANSFER_TOPIC = web3.keccak(text="Transfer(address,address,uint256)").hex()
 
 def load_buys():
     if os.path.exists(JSON_LOG):
@@ -36,97 +40,83 @@ def prune_old_buys(data):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=RETENTION_PERIOD_HOURS)
     return [b for b in data if datetime.fromisoformat(b["timestamp"]) >= cutoff]
 
+def build_filter_params(start_block, end_block):
+    return {
+        "fromBlock": start_block,
+        "toBlock": end_block,
+        "address": Web3.to_checksum_address(BASE_TOKEN_ADDRESS),
+        "topics": [TRANSFER_TOPIC],
+    }
+
 async def run_base_buy_watcher(bot):
-    print("👀 Base buy watcher (Web3) started")
+    print("👀 Base buy watcher (Polling) started")
 
-    # 1. ✅ WebSocket connection check
     if not web3.is_connected():
-        print("❌ Failed to connect to Web3 for Base")
-        return
-    print("✅ Connected to Base WebSocket!")
-
-    try:
-        # 2. Convert to checksum format safely
-        base_lp = Web3.to_checksum_address(BASE_LP_ADDRESS)
-        base_token = Web3.to_checksum_address(BASE_TOKEN_ADDRESS)
-
-        # 3. Validate contract addresses
-        if web3.eth.get_code(base_token) == b'':
-            print(f"❌ Base token address is invalid: {base_token}")
-        else:
-            print(f"✅ Base token address is valid: {base_token}")
-
-        if web3.eth.get_code(base_lp) == b'':
-            print(f"❌ Base LP address is invalid: {base_lp}")
-        else:
-            print(f"✅ Base LP address is valid: {base_lp}")
-
-    except Exception as e:
-        print(f"❌ Address checksum/validation failed: {e}")
+        print("❌ Failed to connect to Base RPC")
         return
 
-    # 4. 🧪 Filter creation test
-    print("🧪 Testing Base filter...")
-    try:
-        event_filter = web3.eth.filter({
-            "address": base_token,
-            "topics": [TRANSFER_TOPIC]
-        })
-        print("✅ Base filter created successfully!")
-    except Exception as e:
-        print(f"❌ Base filter creation failed: {e}")
-        return
-
-    print("🚨 Base buy listener active!")
+    print("✅ Connected to Base RPC!")
     buys = load_buys()
 
-    def handle_event(log):
-        try:
-            topics = log["topics"]
-            if topics[0].hex() != TRANSFER_TOPIC:
-                return
+    BASE_LP = Web3.to_checksum_address(BASE_LP_ADDRESS)
+    last_checked_block = web3.eth.block_number
 
-            from_addr = Web3.to_checksum_address("0x" + topics[1].hex()[-40:])
-            to_addr = Web3.to_checksum_address("0x" + topics[2].hex()[-40:])
-
-            if from_addr.lower() != base_lp.lower():
-                return
-
-            token_amount = int(log["data"], 16)
-            tokens = token_amount // (10**9)  # Adjust decimals if needed
-            now = datetime.now(timezone.utc)
-
-            buy = {
-                "timestamp": now.isoformat(),
-                "chain": "BASE",
-                "amount_usd": 0,
-                "amount_native": 0,
-                "tokens": tokens,
-                "market_cap": 0,
-                "tx_hash": log["transactionHash"].hex(),
-                "emoji_row": "🦍",
-            }
-
-            print(f"💰 New BASE Buy via Web3: {tokens:,} KENDU")
-            buys.append(buy)
-            save_buys(prune_old_buys(buys))
-
-            msg = build_base_buy_panel(buy)
-            asyncio.create_task(bot.send_message(
-                chat_id=CHAT_ID,
-                text=msg,
-                parse_mode="HTML",
-                disable_web_page_preview=True
-            ))
-        except Exception as e:
-            print(f"⚠️ Web3 event handler error (BASE): {e}")
-
-    # 5. 🔁 Poll loop
     while True:
         try:
-            for log in event_filter.get_new_entries():
-                handle_event(log)
+            latest_block = web3.eth.block_number
+            if latest_block == last_checked_block:
+                await asyncio.sleep(POLL_INTERVAL_SECONDS)
+                continue
+
+            logs = web3.eth.get_logs(build_filter_params(last_checked_block + 1, latest_block))
+
+            for log in logs:
+                topics = log["topics"]
+                if topics[0].hex() != TRANSFER_TOPIC:
+                    continue
+
+                from_addr = Web3.to_checksum_address("0x" + topics[1].hex()[-40:])
+                to_addr = Web3.to_checksum_address("0x" + topics[2].hex()[-40:])
+
+                if from_addr.lower() != BASE_LP.lower():
+                    continue
+
+                token_amount = int(log["data"], 16)
+                tokens = token_amount // (10**9)
+                block = web3.eth.get_block(log["blockNumber"])
+                ts = datetime.fromtimestamp(block["timestamp"], tz=timezone.utc)
+
+                amount_usd = 0  # Placeholder
+                amount_native = 0
+                market_cap = 0
+                emoji_row = "🦍"
+
+                buy = {
+                    "timestamp": ts.isoformat(),
+                    "chain": "BASE",
+                    "amount_usd": amount_usd,
+                    "amount_native": amount_native,
+                    "tokens": tokens,
+                    "market_cap": market_cap,
+                    "tx_hash": log["transactionHash"].hex(),
+                    "emoji_row": emoji_row,
+                }
+
+                print(f"💰 New BASE Buy via Polling: {tokens:,} KENDU")
+                buys.append(buy)
+                save_buys(prune_old_buys(buys))
+
+                msg = build_base_buy_panel(buy)
+                await bot.send_message(
+                    chat_id=CHAT_ID,
+                    text=msg,
+                    parse_mode="HTML",
+                    disable_web_page_preview=True
+                )
+
+            last_checked_block = latest_block
             await asyncio.sleep(POLL_INTERVAL_SECONDS)
+
         except Exception as e:
-            print(f"⚠️ BASE Web3 loop error: {e}")
+            print(f"⚠️ BASE polling error: {e}")
             await asyncio.sleep(10)
