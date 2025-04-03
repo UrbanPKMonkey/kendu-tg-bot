@@ -107,6 +107,7 @@ async def run_eth_buy_watcher(bot):
 
         except Exception as e:
             print(f"⚠️ Web3 event handler error: {e}")
+            
 
     # 👂 Subscribe to Transfer events
     print("🧪 Testing Ethereum filter...")
