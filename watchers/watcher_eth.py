@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from core.constants import (
     CHAT_ID,
-    ETH_LP_ADDRESS,
+    ETH_LP_ADDRESS,  # This should already be imported
     ETH_TOKEN_ADDRESS,
     POLL_INTERVAL_SECONDS,
     RETENTION_PERIOD_HOURS,
@@ -48,17 +48,17 @@ async def run_eth_buy_watcher(bot):
     print("✅ Connected to Ethereum WebSocket!")
 
     # Validate Ethereum token and LP addresses
-    ETH_LP_ADDRESS = Web3.to_checksum_address(ETH_LP_ADDRESS)  # Ensure checksum format
-    if web3.eth.get_code(ETH_LP_ADDRESS) == b'':
-        print(f"❌ Ethereum LP address is invalid: {ETH_LP_ADDRESS}")
+    eth_lp_address = Web3.to_checksum_address(ETH_LP_ADDRESS)  # Ensure checksum format
+    if web3.eth.get_code(eth_lp_address) == b'':
+        print(f"❌ Ethereum LP address is invalid: {eth_lp_address}")
     else:
-        print(f"✅ Ethereum LP address is valid: {ETH_LP_ADDRESS}")
+        print(f"✅ Ethereum LP address is valid: {eth_lp_address}")
 
-    ETH_TOKEN_ADDRESS = Web3.to_checksum_address(ETH_TOKEN_ADDRESS)  # Ensure checksum format
-    if web3.eth.get_code(ETH_TOKEN_ADDRESS) == b'':
-        print(f"❌ Ethereum token address is invalid: {ETH_TOKEN_ADDRESS}")
+    eth_token_address = Web3.to_checksum_address(ETH_TOKEN_ADDRESS)  # Ensure checksum format
+    if web3.eth.get_code(eth_token_address) == b'':
+        print(f"❌ Ethereum token address is invalid: {eth_token_address}")
     else:
-        print(f"✅ Ethereum token address is valid: {ETH_TOKEN_ADDRESS}")
+        print(f"✅ Ethereum token address is valid: {eth_token_address}")
 
     buys = load_buys()
 
@@ -69,7 +69,7 @@ async def run_eth_buy_watcher(bot):
                 return
 
             from_addr = Web3.to_checksum_address("0x" + topics[1].hex()[-40:])
-            if from_addr.lower() != ETH_LP_ADDRESS.lower():
+            if from_addr.lower() != eth_lp_address.lower():
                 return
 
             token_amount = int(log["data"], 16)
@@ -107,13 +107,12 @@ async def run_eth_buy_watcher(bot):
 
         except Exception as e:
             print(f"⚠️ Web3 event handler error: {e}")
-            
 
     # 👂 Subscribe to Transfer events
     print("🧪 Testing Ethereum filter...")
     try:
         event_filter = web3.eth.filter({
-            "address": ETH_TOKEN_ADDRESS,
+            "address": eth_token_address,
             "topics": [TRANSFER_TOPIC]
         })
         print("✅ Ethereum filter created successfully!")
