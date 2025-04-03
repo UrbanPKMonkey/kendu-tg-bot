@@ -84,7 +84,7 @@ def build_price_panel(data: dict) -> str:
     )
 
     return (
-        f"\n\n📊 <b>$KENDU Price</b>\n\n"
+        f"📊 <b>$KENDU Price</b>\n\n"
         f"• <b>💲 Price:</b> ${eth.get('price', 'N/A')}\n"
         f"• <b>{circle} 24H Change:</b> {eth.get('change_24h', 'N/A')}\n"
         f"• <b>📦 24H Volume:</b> ${eth.get('volume_24h', 'N/A')}\n"

@@ -27,6 +27,7 @@ async def handle_buy_kendu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🔵 <b>Base (BASE)</b>\n"
         "<code>0xef73611F98DA6E57e0776317957af61B59E09Ed7</code>\n\n"
         "📌 <i>Use a trusted wallet & verify all contracts via /contracts</i>\n\n"
+        "﹎﹎﹎﹎﹎﹎﹎\n\n"
     )
 
     # Fetch and build price panel correctly
