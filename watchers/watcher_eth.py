@@ -1,5 +1,3 @@
-# watcher_eth.py
-
 import json
 import os
 import asyncio
@@ -25,31 +23,42 @@ web3 = Web3(Web3.WebsocketProvider(WSS_ETH))
 JSON_LOG = "buys_eth.json"
 TRANSFER_TOPIC = web3.keccak(text="Transfer(address,address,uint256)").hex()
 
-
 def load_buys():
     if os.path.exists(JSON_LOG):
         with open(JSON_LOG, "r") as f:
             return json.load(f)
     return []
 
-
 def save_buys(data):
     with open(JSON_LOG, "w") as f:
         json.dump(data, f, indent=2)
-
 
 def prune_old_buys(data):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=RETENTION_PERIOD_HOURS)
     return [b for b in data if datetime.fromisoformat(b["timestamp"]) >= cutoff]
 
-
 async def run_eth_buy_watcher(bot):
-    print("👀 ETH buy watcher (Web3) started")
-    buys = load_buys()
+    print("👀 Ethereum buy watcher (Web3) started")
 
+    # Test WebSocket connection
     if not web3.is_connected():
         print("❌ Failed to connect to Web3")
         return
+
+    print("✅ Connected to Ethereum WebSocket!")
+
+    # Validate Ethereum token and LP addresses
+    if web3.eth.get_code(ETH_TOKEN_ADDRESS) == b'':
+        print(f"❌ Ethereum token address is invalid: {ETH_TOKEN_ADDRESS}")
+    else:
+        print(f"✅ Ethereum token address is valid: {ETH_TOKEN_ADDRESS}")
+    
+    if web3.eth.get_code(ETH_LP_ADDRESS) == b'':
+        print(f"❌ Ethereum LP address is invalid: {ETH_LP_ADDRESS}")
+    else:
+        print(f"✅ Ethereum LP address is valid: {ETH_LP_ADDRESS}")
+
+    buys = load_buys()
 
     def handle_event(log):
         try:
@@ -98,10 +107,18 @@ async def run_eth_buy_watcher(bot):
             print(f"⚠️ Web3 event handler error: {e}")
 
     # 👂 Subscribe to Transfer events
-    event_filter = web3.eth.filter({
-        "address": ETH_TOKEN_ADDRESS,
-        "topics": [TRANSFER_TOPIC]
-    })
+    print("🧪 Testing Ethereum filter...")
+    try:
+        event_filter = web3.eth.filter({
+            "address": ETH_TOKEN_ADDRESS,
+            "topics": [TRANSFER_TOPIC]
+        })
+        print("✅ Ethereum filter created successfully!")
+    except Exception as e:
+        print(f"❌ Ethereum filter creation failed: {e}")
+        return
+
+    print("👀 Starting Ethereum buy watcher...")
 
     while True:
         try:

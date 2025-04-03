@@ -38,12 +38,27 @@ def prune_old_buys(data):
     return [b for b in data if datetime.fromisoformat(b["timestamp"]) >= cutoff]
 
 async def run_base_buy_watcher(bot):
-    print("👀 BASE buy watcher (Web3) started")
-    buys = load_buys()
+    print("👀 Base buy watcher (Web3) started")
 
+    # Test WebSocket connection
     if not web3_base.is_connected():
         print("❌ Failed to connect to Web3 for Base")
         return
+
+    print("✅ Connected to Base WebSocket!")
+
+    # Validate Base token and LP addresses
+    if web3_base.eth.get_code(BASE_TOKEN_ADDRESS) == b'':
+        print(f"❌ Base token address is invalid: {BASE_TOKEN_ADDRESS}")
+    else:
+        print(f"✅ Base token address is valid: {BASE_TOKEN_ADDRESS}")
+    
+    if web3_base.eth.get_code(BASE_LP_ADDRESS) == b'':
+        print(f"❌ Base LP address is invalid: {BASE_LP_ADDRESS}")
+    else:
+        print(f"✅ Base LP address is valid: {BASE_LP_ADDRESS}")
+
+    buys = load_buys()
 
     def handle_event(log):
         try:
@@ -54,12 +69,11 @@ async def run_base_buy_watcher(bot):
             from_addr = Web3.to_checksum_address("0x" + topics[1].hex()[-40:])
             to_addr = Web3.to_checksum_address("0x" + topics[2].hex()[-40:])
 
-            # ✅ Detect buys: from LP → user
             if from_addr.lower() != BASE_LP_ADDRESS.lower():
                 return
 
             token_amount = int(log["data"], 16)
-            tokens = token_amount // (10**9)  # Assuming 9 decimals for KENDU
+            tokens = token_amount // 10**9
             now = datetime.now(timezone.utc)
 
             amount_usd = 0  # Placeholder
@@ -94,10 +108,18 @@ async def run_base_buy_watcher(bot):
             print(f"⚠️ Web3 event handler error: {e}")
 
     # 👂 Subscribe to Transfer events for KENDU token
-    event_filter = web3_base.eth.filter({
-        "address": BASE_TOKEN_ADDRESS,
-        "topics": [TRANSFER_TOPIC]
-    })
+    print("🧪 Testing Base filter...")
+    try:
+        event_filter = web3_base.eth.filter({
+            "address": BASE_TOKEN_ADDRESS,
+            "topics": [TRANSFER_TOPIC]
+        })
+        print("✅ Base filter created successfully!")
+    except Exception as e:
+        print(f"❌ Base filter creation failed: {e}")
+        return
+
+    print("👀 Starting Base buy watcher...")
 
     while True:
         try:
