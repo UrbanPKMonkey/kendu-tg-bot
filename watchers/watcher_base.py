@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from core.constants import (
     CHAT_ID,
     BASE_LP_ADDRESS,
-    BASE_TOKEN,
+    BASE_TOKEN_ADDRESS,
     POLL_INTERVAL_SECONDS,
     RETENTION_PERIOD_HOURS,
     EMOJI_UNIT_USD,
@@ -48,7 +48,7 @@ async def run_base_buy_watcher(bot):
     try:
         # 2. Convert to checksum format safely
         base_lp = Web3.to_checksum_address(BASE_LP_ADDRESS)
-        base_token = Web3.to_checksum_address(BASE_TOKEN)
+        base_token = Web3.to_checksum_address(BASE_TOKEN_ADDRESS)
 
         # 3. Validate contract addresses
         if web3.eth.get_code(base_token) == b'':
