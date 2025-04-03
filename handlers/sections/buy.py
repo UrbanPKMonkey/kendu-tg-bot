@@ -127,6 +127,9 @@ async def handle_buy_chain(update: Update, context: ContextTypes.DEFAULT_TYPE, c
 async def handle_refresh_prices(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("🔄 Refreshing price panel...")
 
+    # Force override so it doesn’t skip re-render
+    context.user_data["force_refresh"] = True
+
     current_section = context.user_data.get("current_section")
 
     if current_section == "buy":
@@ -134,4 +137,4 @@ async def handle_refresh_prices(update: Update, context: ContextTypes.DEFAULT_TY
     elif current_section == "price":
         await handle_price(update, context)
     else:
-        await handle_buy_kendu(update, context)  # default fallback
+        await handle_price(update, context)  # fallback

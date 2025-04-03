@@ -48,6 +48,12 @@ async def should_skip_section_render(update, context, section_type: str = "text"
     except Exception as e:
         print(f"⚠️ Failed to delete slash command: {e}")
 
+    # 🟢 Force refresh logic from 'Refresh Price' button
+    if context.user_data.get("force_refresh"):
+        print("🔁 Refresh forced — not skipping render.")
+        context.user_data.pop("force_refresh", None)
+        return False
+
     old_msg_ids, old_type, old_section = get_tracked_menu_state(context)
 
     if (
@@ -59,4 +65,4 @@ async def should_skip_section_render(update, context, section_type: str = "text"
         print(f"⏭️ {section_key.upper()} already active — skipping re-render")
         return True
 
-    return False 
+    return False
