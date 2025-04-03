@@ -19,8 +19,8 @@ from core.constants import (
 from utils.build_buy_panel import build_eth_buy_panel
 
 load_dotenv()
-INFURA_WSS = os.getenv("INFURA_WSS")
-web3 = Web3(Web3.WebsocketProvider(INFURA_WSS))
+WSS_ETH = os.getenv("WSS_ETH")
+web3 = Web3(Web3.WebsocketProvider(WSS_ETH))
 
 JSON_LOG = "buys_eth.json"
 TRANSFER_TOPIC = web3.keccak(text="Transfer(address,address,uint256)").hex()

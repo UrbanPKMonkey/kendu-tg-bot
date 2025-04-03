@@ -17,9 +17,9 @@ from core.constants import (
 from utils.build_buy_panel import build_base_buy_panel
 
 load_dotenv()
-INFURA_WSS_BASE = os.getenv("WSS_BASE")
+WSS_BASE = os.getenv("WSS_BASE")
 
-web3_base = Web3(Web3.WebsocketProvider(INFURA_WSS_BASE))
+web3_base = Web3(Web3.WebsocketProvider(WSS_BASE))
 TRANSFER_TOPIC = web3_base.keccak(text="Transfer(address,address,uint256)").hex()
 JSON_LOG = "buys_base.json"
 
